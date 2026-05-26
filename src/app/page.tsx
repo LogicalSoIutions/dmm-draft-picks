@@ -41,11 +41,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <Link className="button" href="/draft/new">
                 My Draft
               </Link>
+              <Link className="button secondary" href="/privacy">
+                Privacy
+              </Link>
             </>
           ) : (
-            <Link className="button" href="/auth/kick/start?next=/draft/new">
-              Login with Kick
-            </Link>
+            <>
+              <Link className="button" href="/auth/kick/start?next=/draft/new">
+                Login with Kick
+              </Link>
+              <Link className="button secondary" href="/privacy">
+                Privacy
+              </Link>
+            </>
           )}
         </div>
       </header>
