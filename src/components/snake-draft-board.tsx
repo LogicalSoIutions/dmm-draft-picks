@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -267,9 +267,12 @@ function CaptainColumn({
   slotNumbers: number[];
   slotAssignments: (string | null)[];
 }) {
+  const headerStyle: CSSProperties | undefined = captain.color
+    ? ({ "--captain-color": captain.color } as CSSProperties)
+    : undefined;
   return (
     <div className="captain-column">
-      <div className="captain-column-header">
+      <div className="captain-column-header" style={headerStyle}>
         <Image
           src={captain.imagePath}
           alt={captain.label}

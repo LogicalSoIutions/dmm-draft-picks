@@ -67,9 +67,12 @@ function ReadOnlyCaptainColumn({
   slotAssignments,
   pickBorderColor,
 }: ReadOnlyCaptainColumnProps) {
+  const headerStyle: CSSProperties | undefined = captain.color
+    ? ({ "--captain-color": captain.color } as CSSProperties)
+    : undefined;
   return (
     <div className="captain-column">
-      <div className="captain-column-header">
+      <div className="captain-column-header" style={headerStyle}>
         <Image
           src={captain.imagePath}
           alt={captain.label}

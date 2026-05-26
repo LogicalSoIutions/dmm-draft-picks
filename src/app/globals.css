@@ -255,12 +255,10 @@ p {
   cursor: default;
 }
 
-.pick-card-captain-bordered {
-  border-color: var(--captain-color, var(--osrs-border));
-  box-shadow:
-    inset 1px 1px 0 rgba(255, 215, 110, 0.14),
-    inset -1px -1px 0 rgba(0, 0, 0, 0.65),
-    0 0 0 1px var(--captain-color, transparent);
+.pick-card-captain-bordered .participant-image,
+.captain-column-header .participant-image,
+.stats-captain-card-header .participant-image {
+  background: var(--captain-color, #0a0907);
 }
 
 .pick-card-slot {
@@ -914,8 +912,20 @@ p {
 
 .stats-captain-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .stats-captain-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-captain-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stats-captain-card {

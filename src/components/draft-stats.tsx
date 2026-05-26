@@ -1,11 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
 import {
   captains,
   picks,
   type Participant,
 } from "@/data/participants";
+
+const captainHeaderStyle = (captain: Participant): CSSProperties | undefined =>
+  captain.color
+    ? ({ "--captain-color": captain.color } as CSSProperties)
+    : undefined;
 import type {
   CaptainAffinity,
   DraftStatsSummary,
@@ -169,7 +175,10 @@ function ConsensusBoard({ slotConsensus }: ConsensusBoardProps) {
         <div className="captain-table stats-consensus-table">
           {captains.map((captain, captainIndex) => (
             <div key={captain.id} className="captain-column">
-              <div className="captain-column-header">
+              <div
+                className="captain-column-header"
+                style={captainHeaderStyle(captain)}
+              >
                 <Image
                   src={captain.imagePath}
                   alt={captain.label}
@@ -348,7 +357,10 @@ function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
           }
           return (
             <div key={entry.captainId} className="stats-captain-card">
-              <div className="stats-captain-card-header">
+              <div
+                className="stats-captain-card-header"
+                style={captainHeaderStyle(captain)}
+              >
                 <Image
                   src={captain.imagePath}
                   alt={captain.label}
