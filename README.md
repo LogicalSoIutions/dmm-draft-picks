@@ -13,6 +13,7 @@ A Next.js + SQLite web app that lets viewers guess the DMM draft order. Users si
 - **Admin official-draft** endpoint to publish the canonical draft for comparison once revealed (`ADMIN_KICK_USERNAMES`).
 - **Encrypted token storage** in SQLite with versioned keys, so access/refresh tokens are never stored in plaintext and never logged.
 - **Rate limiting** of `/api/drafts` per session via lightweight in-memory limiter / proxy middleware.
+- **Public stats page** (`/stats`) with a consensus snake board, per-pick slot/captain breakdowns, captain affinity, and (when published) an official-draft leaderboard.
 
 ## Tech stack
 
@@ -34,14 +35,15 @@ src/
     draft/new/page.tsx             # Create / edit current user's draft
     d/[publicId]/page.tsx          # Public read-only view of a draft
     d/[publicId]/[editKey]/page.tsx# Owner-only editable view
+    stats/page.tsx                 # Public aggregate stats across all drafts
     api/drafts/                    # Create / update / fetch draft endpoints
     api/admin/official-draft/      # Admin-only: publish the official draft
     api/images/[file]/             # Serves participant images from /images
     admin/page.tsx                 # Admin UI to set the official draft
     privacy/page.tsx               # Privacy disclosure page
-  components/                      # Editor, viewer, carousel, snake board UIs
+  components/                      # Editor, viewer, carousel, snake board, stats UIs
   data/participants.ts             # 6 captains + 24 picks manifest
-  lib/                             # auth, session, kick client, crypto,
+  lib/                             # auth, session, kick client, crypto, draft-stats,
                                    # rate-limit, env validation, snake-draft
   server/db/                       # schema.sql + typed queries (better-sqlite3)
   proxy.ts                         # Per-session rate limit on /api/drafts
@@ -156,6 +158,7 @@ Vitest covers:
 
 - `tests/auth-callback.test.ts` — Kick OAuth callback validation.
 - `tests/draft-authorization.test.ts` — owner + edit-key authorization for draft updates.
+- `tests/draft-stats.test.ts` — aggregate-stat computations (consensus, per-pick, per-captain, official-match).
 
 Run `npm run test` to execute them.
 

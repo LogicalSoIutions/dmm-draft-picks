@@ -33,6 +33,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <h1>DMM Draft Order</h1>
         </div>
         <div className="page-header-actions">
+          <Link className="button secondary" href="/stats">
+            View Stats
+          </Link>
           {user ? (
             <>
               <span className="page-header-user">

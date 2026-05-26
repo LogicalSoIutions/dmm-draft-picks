@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { DraftViewer } from "@/components/draft-viewer";
 import type { CaptainAssignments } from "@/data/participants";
+import { formatEasternDateTime } from "@/lib/format-date";
 
 export type CarouselDraft = {
   publicId: string;
@@ -26,11 +27,7 @@ const wrapIndex = (index: number, length: number): number => {
 };
 
 const formatUpdatedAt = (isoString: string): string => {
-  const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) {
-    return isoString;
-  }
-  return date.toLocaleString();
+  return formatEasternDateTime(isoString);
 };
 
 export function DraftCarousel({ drafts }: DraftCarouselProps) {
