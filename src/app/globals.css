@@ -255,6 +255,14 @@ p {
   cursor: default;
 }
 
+.pick-card-captain-bordered {
+  border-color: var(--captain-color, var(--osrs-border));
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.14),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.65),
+    0 0 0 1px var(--captain-color, transparent);
+}
+
 .pick-card-slot {
   font-size: 10px;
   color: var(--osrs-text-muted);

@@ -110,6 +110,7 @@ export function DraftCarousel({ drafts }: DraftCarouselProps) {
       <DraftViewer
         order={current.picksOrder}
         captainAssignments={current.captainAssignments}
+        colorPicksByCaptain
       />
     </div>
   );
