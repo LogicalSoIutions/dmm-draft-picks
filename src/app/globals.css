@@ -574,6 +574,19 @@ p {
   text-decoration: underline;
 }
 
+.site-footer {
+  max-width: 1400px;
+  margin: 32px auto 0;
+  padding: 16px 24px 24px;
+  border-top: 2px solid var(--osrs-border);
+  text-align: center;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--osrs-text-muted);
+  text-shadow: var(--osrs-shadow-1);
+}
+
 @media (max-width: 600px) {
   .page-header {
     flex-direction: column;

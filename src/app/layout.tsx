@@ -13,7 +13,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="site-footer">
+          <a
+            href="https://github.com/LogicalSoIutions/dmm-draft-picks"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View source on GitHub
+          </a>
+        </footer>
+      </body>
     </html>
   );
 }

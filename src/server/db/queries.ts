@@ -548,6 +548,102 @@ export const listAllDraftsWithOwner = (): DraftWithOwner[] => {
   return rows.map(mapDraftWithOwner);
 };
 
+const mapOfficialDraft = (row: OfficialDraftRow): OfficialDraftRecord => {
+  const { order, captainAssignments } = parseDraftPayload(
+    row.picks_order_json,
+    row.captain_assignments_json,
+  );
+  return {
+    picksOrder: order,
+    captainAssignments,
+    setByUserId: row.set_by_user_id,
+    updatedAt: row.updated_at,
+  };
+};
+
+const mapOfficialMatch = (row: OfficialMatchRow): OfficialDraftMatch => ({
+  publicId: row.public_id,
+  ownerUserId: row.owner_user_id,
+  kickUsername: row.kick_username,
+  updatedAt: row.updated_at,
+});
+
+export const getOfficialDraft = (): OfficialDraftRecord | null => {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `
+        SELECT
+          picks_order_json,
+          captain_assignments_json,
+          set_by_user_id,
+          updated_at
+        FROM official_draft
+        WHERE id = 1
+      `,
+    )
+    .get() as OfficialDraftRow | undefined;
+  return row ? mapOfficialDraft(row) : null;
+};
+
+export const upsertOfficialDraft = (params: {
+  picksOrder: string[];
+  captainAssignments: CaptainAssignments;
+  setByUserId: number;
+}): OfficialDraftRecord => {
+  const db = getDb();
+  const orderPayload = JSON.stringify(params.picksOrder);
+  const assignmentsPayload = JSON.stringify(params.captainAssignments);
+  db.prepare(
+    `
+      INSERT INTO official_draft (
+        id,
+        picks_order_json,
+        captain_assignments_json,
+        set_by_user_id
+      )
+      VALUES (1, ?, ?, ?)
+      ON CONFLICT(id)
+      DO UPDATE SET
+        picks_order_json = excluded.picks_order_json,
+        captain_assignments_json = excluded.captain_assignments_json,
+        set_by_user_id = excluded.set_by_user_id,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+  ).run(orderPayload, assignmentsPayload, params.setByUserId);
+  const record = getOfficialDraft();
+  if (!record) {
+    throw new Error("Failed to load official draft after upsert");
+  }
+  return record;
+};
+
+export const findDraftsMatchingPayload = (params: {
+  picksOrder: string[];
+  captainAssignments: CaptainAssignments;
+}): OfficialDraftMatch[] => {
+  const db = getDb();
+  const orderPayload = JSON.stringify(params.picksOrder);
+  const assignmentsPayload = JSON.stringify(params.captainAssignments);
+  const rows = db
+    .prepare(
+      `
+        SELECT
+          d.public_id,
+          d.owner_user_id,
+          u.kick_username,
+          d.updated_at
+        FROM drafts d
+        INNER JOIN users u ON u.id = d.owner_user_id
+        WHERE d.picks_order_json = ?
+          AND d.captain_assignments_json = ?
+        ORDER BY d.updated_at ASC
+      `,
+    )
+    .all(orderPayload, assignmentsPayload) as OfficialMatchRow[];
+  return rows.map(mapOfficialMatch);
+};
+
 export const updateDraftOrder = (params: {
   publicId: string;
   picksOrder: string[];
