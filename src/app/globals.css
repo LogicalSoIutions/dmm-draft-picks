@@ -1,0 +1,593 @@
+@font-face {
+  font-family: "OSRSUI";
+  src: url("/osrs-theme/fonts/osrs-ui.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "OSRSUI";
+  src: url("/osrs-theme/fonts/osrs-ui-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  --osrs-font: "OSRSUI", Tahoma, "Trebuchet MS", Geneva, Verdana, sans-serif;
+
+  --osrs-bg: #0b0b0d;
+  --osrs-bg-top: #1a1813;
+  --osrs-panel: #2a2620;
+  --osrs-panel-light: #3a3326;
+  --osrs-panel-dark: #1c1a15;
+  --osrs-slot-bg: #100e0b;
+  --osrs-slot-bg-dark: #0a0907;
+
+  --osrs-border: #6f674f;
+  --osrs-border-bright: #8d8160;
+  --osrs-border-dark: #2a2620;
+  --osrs-rule: #4a432f;
+
+  --osrs-gold: #ffcc5c;
+  --osrs-gold-bright: #ffe65c;
+  --osrs-orange: #ff9f3b;
+  --osrs-orange-bright: #ffb25a;
+  --osrs-parchment: #f6d57b;
+  --osrs-parchment-bright: #f6f1dc;
+  --osrs-parchment-muted: #d2c9a8;
+  --osrs-text: #e5ddc0;
+  --osrs-text-muted: #b1945a;
+  --osrs-text-dim: #9b957e;
+
+  --osrs-green: #b2dc79;
+  --osrs-red: #ff9f7f;
+
+  --osrs-shadow-1: 1px 1px 0 #000;
+  --osrs-shadow-2: 1px 1px 0 #000, 2px 2px 0 #000;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--osrs-font);
+  letter-spacing: 0.02em;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(255, 165, 60, 0.07), transparent 60%),
+    linear-gradient(180deg, var(--osrs-bg-top) 0%, var(--osrs-bg) 60%, #050505 100%);
+  background-attachment: fixed;
+  color: var(--osrs-text);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--osrs-gold);
+  text-decoration: none;
+  text-shadow: var(--osrs-shadow-1);
+}
+
+a:hover {
+  color: var(--osrs-gold-bright);
+  text-decoration: underline;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--osrs-gold-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: var(--osrs-shadow-2);
+  margin: 0 0 12px 0;
+  font-weight: 800;
+}
+
+h1 {
+  font-size: 32px;
+  color: var(--osrs-orange-bright);
+}
+
+h2 {
+  font-size: 20px;
+  color: var(--osrs-gold-bright);
+}
+
+h3 {
+  font-size: 15px;
+  color: var(--osrs-gold);
+}
+
+p {
+  margin: 0 0 8px 0;
+  color: var(--osrs-parchment-muted);
+  text-shadow: var(--osrs-shadow-1);
+  font-size: 14px;
+}
+
+.card {
+  position: relative;
+  background:
+    linear-gradient(180deg, var(--osrs-panel) 0%, var(--osrs-panel-dark) 100%);
+  border: 2px solid var(--osrs-border);
+  border-radius: 0;
+  padding: 16px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.12),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.65),
+    0 0 0 1px #000,
+    0 8px 18px rgba(0, 0, 0, 0.55);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--osrs-rule);
+  pointer-events: none;
+}
+
+.card > * {
+  position: relative;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #4a4233 0%, #322c20 100%);
+  color: var(--osrs-parchment);
+  border: 2px solid var(--osrs-border);
+  border-radius: 0;
+  padding: 10px 18px;
+  font-family: var(--osrs-font);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: var(--osrs-shadow-1);
+  cursor: pointer;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.22),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.6),
+    0 1px 0 #000;
+  transition: background 100ms ease, color 100ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #5a503c 0%, #3d3527 100%);
+  color: var(--osrs-gold-bright);
+  border-color: var(--osrs-border-bright);
+}
+
+.button:active:not(:disabled) {
+  box-shadow:
+    inset -1px -1px 0 rgba(255, 215, 110, 0.18),
+    inset 1px 1px 0 rgba(0, 0, 0, 0.6);
+  transform: translateY(1px);
+}
+
+.button.secondary {
+  background: linear-gradient(180deg, #34301f 0%, #221e16 100%);
+  color: var(--osrs-parchment-muted);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
+.participant-card {
+  background: linear-gradient(180deg, #1a1714 0%, #100e0b 100%);
+  border: 2px solid var(--osrs-border);
+  border-radius: 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--osrs-parchment);
+  text-shadow: var(--osrs-shadow-1);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.14),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.65);
+}
+
+.participant-card strong {
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--osrs-parchment);
+  text-shadow: var(--osrs-shadow-2);
+}
+
+.participant-image {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  border: 1px solid #000;
+  background: #0a0907;
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 110, 0.08);
+}
+
+.pick-card {
+  align-items: center;
+  padding: 6px;
+  gap: 4px;
+  user-select: none;
+  width: 100%;
+}
+
+.pick-card .participant-image {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+}
+
+.pick-card-readonly {
+  cursor: default;
+}
+
+.pick-card-slot {
+  font-size: 10px;
+  color: var(--osrs-text-muted);
+  text-shadow: var(--osrs-shadow-1);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pick-card-draggable {
+  display: flex;
+  width: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.pick-card-draggable:active {
+  cursor: grabbing;
+}
+
+.pick-card-overlay {
+  cursor: grabbing;
+  transform: rotate(-2deg);
+  border-color: var(--osrs-gold);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.25),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.65),
+    0 14px 26px rgba(0, 0, 0, 0.75),
+    0 0 18px rgba(255, 204, 92, 0.25);
+}
+
+.captain-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.captain-table {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-width: 100%;
+}
+
+.captain-column {
+  background: linear-gradient(180deg, #1c1812 0%, #14110d 100%);
+  border: 2px solid var(--osrs-border);
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.1),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.7);
+}
+
+.captain-column-header {
+  padding: 10px 8px;
+  border-bottom: 2px solid var(--osrs-border);
+  background: linear-gradient(180deg, #3a3326 0%, #241f17 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.captain-column-header .participant-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.captain-column-header strong {
+  color: var(--osrs-gold-bright);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: var(--osrs-shadow-2);
+}
+
+.captain-column-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.snake-slot {
+  position: relative;
+  min-height: 122px;
+  border: 2px solid var(--osrs-border);
+  background: linear-gradient(180deg, var(--osrs-slot-bg) 0%, var(--osrs-slot-bg-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(0, 0, 0, 0.75),
+    inset -1px -1px 0 rgba(255, 215, 110, 0.08);
+}
+
+.snake-slot.is-empty {
+  border-style: dashed;
+}
+
+.snake-slot.is-over {
+  border-color: var(--osrs-gold);
+  background: rgba(255, 204, 92, 0.08);
+  box-shadow:
+    inset 0 0 0 1px var(--osrs-gold-bright),
+    0 0 12px rgba(255, 204, 92, 0.35);
+}
+
+.snake-slot-number {
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--osrs-orange);
+  letter-spacing: 0.04em;
+  font-family: var(--osrs-font);
+  text-shadow:
+    1px 1px 0 #000,
+    2px 2px 0 #000,
+    3px 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+.pool {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 2px dashed var(--osrs-border);
+  background: rgba(15, 13, 10, 0.85);
+  min-height: 110px;
+  align-items: start;
+  justify-items: center;
+  transition: border-color 120ms ease, background 120ms ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(0, 0, 0, 0.7),
+    inset -1px -1px 0 rgba(255, 215, 110, 0.06);
+}
+
+.pool.is-over {
+  border-color: var(--osrs-gold);
+  background: rgba(255, 204, 92, 0.06);
+  box-shadow:
+    inset 0 0 0 1px var(--osrs-gold-bright),
+    0 0 12px rgba(255, 204, 92, 0.25);
+}
+
+.pool .pick-card-draggable {
+  width: 100%;
+  max-width: 130px;
+}
+
+.pool-empty {
+  margin: 0;
+  grid-column: 1 / -1;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: var(--osrs-text-dim);
+}
+
+.status {
+  font-weight: 700;
+  min-height: 20px;
+  text-shadow: var(--osrs-shadow-1);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.status.error {
+  color: var(--osrs-red);
+}
+
+.status.ok {
+  color: var(--osrs-green);
+}
+
+.grid.picks {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.grid.draft-teams {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.team-card {
+  align-items: stretch;
+  padding: 10px;
+}
+
+.team-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.team-member-chip {
+  background: linear-gradient(180deg, #2a2620, #1a1713);
+  border: 1px solid var(--osrs-border);
+  border-radius: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--osrs-parchment);
+  text-shadow: var(--osrs-shadow-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.12),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.captain-assignment-current {
+  font-size: 11px;
+  color: var(--osrs-parchment-muted);
+  text-shadow: var(--osrs-shadow-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--osrs-border);
+}
+
+.page-header-title h1 {
+  margin: 0;
+}
+
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.page-header-user {
+  color: var(--osrs-parchment-muted);
+  text-shadow: var(--osrs-shadow-1);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.page-header-user strong {
+  color: var(--osrs-parchment);
+}
+
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.carousel-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.carousel-arrow {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.carousel-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.carousel-owner {
+  margin: 0;
+  font-size: 22px;
+}
+
+.carousel-sub {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--osrs-parchment-muted);
+  text-shadow: var(--osrs-shadow-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.carousel-dot {
+  color: var(--osrs-text-dim);
+}
+
+.carousel-link {
+  color: var(--osrs-gold);
+}
+
+.carousel-link:hover {
+  color: var(--osrs-gold-bright);
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .carousel-arrow {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+}
