@@ -19,6 +19,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <main>
+      <aside className="prize-banner" role="note">
+        <div className="prize-banner-title">Prize Pool</div>
+        <p className="prize-banner-text">
+          Whoever guesses the draft right gets{" "}
+          <strong>500M OSRS GP from Odablock</strong>. If more than 3 people
+          win, the first two people to enter the winning draft will face off in
+          a <strong>Split or Steal</strong>.
+        </p>
+      </aside>
       <header className="page-header">
         <div className="page-header-title">
           <h1>DMM Draft Order</h1>
