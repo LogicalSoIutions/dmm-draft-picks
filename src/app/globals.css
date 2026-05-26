@@ -126,20 +126,7 @@ p {
   box-shadow:
     inset 1px 1px 0 rgba(255, 215, 110, 0.12),
     inset -1px -1px 0 rgba(0, 0, 0, 0.65),
-    0 0 0 1px #000,
     0 8px 18px rgba(0, 0, 0, 0.55);
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid var(--osrs-rule);
-  pointer-events: none;
-}
-
-.card > * {
-  position: relative;
 }
 
 .row {
@@ -232,9 +219,7 @@ p {
   width: 100%;
   height: auto;
   image-rendering: pixelated;
-  border: 1px solid #000;
   background: #0a0907;
-  box-shadow: inset 0 0 0 1px rgba(255, 215, 110, 0.08);
 }
 
 .pick-card {
@@ -249,6 +234,13 @@ p {
   width: 64px;
   height: 64px;
   object-fit: cover;
+}
+
+.snake-slot .participant-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
 }
 
 .pick-card-readonly {
@@ -498,17 +490,8 @@ p {
   box-shadow:
     inset 1px 1px 0 rgba(255, 215, 110, 0.22),
     inset -1px -1px 0 rgba(0, 0, 0, 0.65),
-    0 0 0 1px #000,
     0 0 18px rgba(255, 204, 92, 0.18),
     0 8px 18px rgba(0, 0, 0, 0.55);
-}
-
-.prize-banner::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid var(--osrs-rule);
-  pointer-events: none;
 }
 
 .prize-banner-title {
@@ -787,6 +770,7 @@ p {
   width: 56px;
   height: 56px;
   object-fit: cover;
+  background: #4a4233;
 }
 
 .stats-pick-grid {
