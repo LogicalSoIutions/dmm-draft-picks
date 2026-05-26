@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DMM Draft Order",
-  description: "Kick-authenticated draft order builder",
+  description: "Pick your own draft order to win 500M OSRS GP from Odablock",
 };
 
 export default function RootLayout({
