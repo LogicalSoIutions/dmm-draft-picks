@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { type CSSProperties, useState } from "react";
+import { type CSSProperties, type ReactNode, useState } from "react";
 
 import {
   captains,
@@ -64,6 +64,23 @@ const formatDate = (iso: string | null): string => {
   return formatEasternDateTime(iso);
 };
 
+const formatCount = (count: number, singular: string, plural = `${singular}s`): string =>
+  `${count} ${count === 1 ? singular : plural}`;
+
+type StatsSectionIntroProps = {
+  children: ReactNode;
+  note?: ReactNode;
+};
+
+function StatsSectionIntro({ children, note }: StatsSectionIntroProps) {
+  return (
+    <div className="stats-section-intro">
+      <p className="stats-section-lead">{children}</p>
+      {note ? <p className="stats-section-note">{note}</p> : null}
+    </div>
+  );
+}
+
 type PickThumbProps = {
   pick: Participant;
   size?: number;
@@ -124,7 +141,7 @@ function ConsensusSlotCell({ slot }: ConsensusSlotCellProps) {
           <div className="stats-consensus-slot-top-text">
             <strong>{topPick.label}</strong>
             <span className="stats-consensus-slot-top-pct">
-              {formatPercent(top.percent)}
+              {formatPercent(top.percent)} of drafts
             </span>
           </div>
         </div>
@@ -144,7 +161,7 @@ function ConsensusSlotCell({ slot }: ConsensusSlotCellProps) {
                   {runnerPick.label}
                 </span>
                 <span className="stats-consensus-runner-pct">
-                  {formatPercent(runner.percent)}
+                  {formatPercent(runner.percent)} of drafts
                 </span>
               </li>
             );
@@ -169,10 +186,12 @@ function ConsensusBoard({ slotConsensus }: ConsensusBoardProps) {
   return (
     <div className="card stats-section">
       <h2>Consensus Snake Board</h2>
-      <p>
-        For each snake-draft slot, the pick that the most people put there
-        across every submitted draft. Hover counts show the runners-up.
-      </p>
+      <StatsSectionIntro
+        note="Percentages show how many submitted drafts placed that player in this slot. Runners-up are listed below the favorite."
+      >
+        The crowd favorite for each slot on the snake board — who most people
+        think gets picked in that exact position.
+      </StatsSectionIntro>
       <div className="captain-table-scroll">
         <div className="captain-table stats-consensus-table">
           {captains.map((captain, captainIndex) => (
@@ -222,20 +241,19 @@ function PickStatCard({ pick, stats }: PickStatCardProps) {
         <div className="stats-pick-card-headline">
           <strong>{pick.label}</strong>
           <span className="stats-pick-card-meta">
-            {stats.totalAppearances} placement
-            {stats.totalAppearances === 1 ? "" : "s"}
+            In {formatCount(stats.totalAppearances, "draft")}
           </span>
         </div>
       </div>
       <dl className="stats-pick-card-stats">
         <div>
-          <dt>Most common slot</dt>
+          <dt>Usually on team</dt>
           <dd>
-            {stats.modeSlotNumber !== null ? (
+            {modeCaptain ? (
               <>
-                <strong>#{stats.modeSlotNumber}</strong>{" "}
-                <span className="stats-pct">
-                  ({formatPercent(stats.modeSlotPercent)})
+                <strong>{modeCaptain.label}</strong>
+                <span className="stats-stat-detail">
+                  {formatPercent(stats.captainBuckets[0]?.percent ?? 0)} of drafts
                 </span>
               </>
             ) : (
@@ -244,32 +262,44 @@ function PickStatCard({ pick, stats }: PickStatCardProps) {
           </dd>
         </div>
         <div>
-          <dt>Average slot</dt>
+          <dt>Typical pick #</dt>
           <dd>
-            {stats.averageSlot !== null
-              ? formatNumber(stats.averageSlot, 1)
-              : "—"}
-          </dd>
-        </div>
-        <div>
-          <dt>Slot range</dt>
-          <dd>
-            {stats.minSlot !== null && stats.maxSlot !== null
-              ? stats.minSlot === stats.maxSlot
-                ? `#${stats.minSlot}`
-                : `#${stats.minSlot}–#${stats.maxSlot}`
-              : "—"}
-          </dd>
-        </div>
-        <div>
-          <dt>Top captain</dt>
-          <dd>
-            {modeCaptain ? (
+            {stats.modeSlotNumber !== null ? (
               <>
-                <strong>{modeCaptain.label}</strong>{" "}
-                <span className="stats-pct">
-                  ({formatPercent(stats.captainBuckets[0]?.percent ?? 0)})
+                <strong>#{stats.modeSlotNumber}</strong>
+                <span className="stats-stat-detail">
+                  {formatPercent(stats.modeSlotPercent)} of drafts
                 </span>
+              </>
+            ) : (
+              "—"
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Average pick #</dt>
+          <dd>
+            {stats.averageSlot !== null ? (
+              <>
+                <strong>#{formatNumber(stats.averageSlot, 1)}</strong>
+                <span className="stats-stat-detail">overall draft position</span>
+              </>
+            ) : (
+              "—"
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>Pick # range</dt>
+          <dd>
+            {stats.minSlot !== null && stats.maxSlot !== null ? (
+              <>
+                <strong>
+                  {stats.minSlot === stats.maxSlot
+                    ? `#${stats.minSlot}`
+                    : `#${stats.minSlot}–#${stats.maxSlot}`}
+                </strong>
+                <span className="stats-stat-detail">earliest to latest seen</span>
               </>
             ) : (
               "—"
@@ -287,7 +317,7 @@ function PickStatCard({ pick, stats }: PickStatCardProps) {
               <div
                 key={bucket.slotNumber}
                 className="stats-pick-histogram-bar"
-                title={`Slot #${bucket.slotNumber}: ${bucket.count} (${formatPercent(bucket.percent)})`}
+                title={`Pick #${bucket.slotNumber}: ${formatCount(bucket.count, "draft")} (${formatPercent(bucket.percent)} of drafts with ${pick.label})`}
               >
                 <span
                   className="stats-pick-histogram-fill"
@@ -331,7 +361,7 @@ function PickBreakdown({ pickStats }: PickBreakdownProps) {
   return (
     <div className="card stats-section">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-        <h2>Per-Pick Breakdown</h2>
+        <h2>Per-Player Stats</h2>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             className={`button ${sortBy === "default" ? "" : "secondary"}`}
@@ -349,10 +379,12 @@ function PickBreakdown({ pickStats }: PickBreakdownProps) {
           </button>
         </div>
       </div>
-      <p>
-        Where each pick lands across all submitted drafts. Bars show the slot
-        distribution; the taller the bar, the more people put them there.
-      </p>
+      <StatsSectionIntro
+        note="Percentages here are per player — e.g. “93% of drafts” means that many guessers put this player on that team or in that slot. This is different from the captain roster view below."
+      >
+        For each player, where guessers usually place them on the board. Taller
+        bars mean more people picked that overall draft position.
+      </StatsSectionIntro>
       <div className="stats-pick-grid">
         {sorted.map((stats) => {
           const pick = pickById.get(stats.pickId);
@@ -373,11 +405,14 @@ type CaptainAffinitySectionProps = {
 function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
   return (
     <div className="card stats-section">
-      <h2>Captain Affinity</h2>
-      <p>
-        Picks that people most often assign to each captain in the snake-draft
-        layout.
-      </p>
+      <h2>Popular Picks per Captain</h2>
+      <StatsSectionIntro
+        note="Each captain gets 4 players per draft, so one player can’t take more than ~25% of a captain’s spots even if everyone agrees. Only the top 4 players are shown — percentages won’t add to 100%."
+      >
+        Who guessers most often put on each captain’s team. Percentages are
+        share of that captain’s roster spots across all drafts, not “chance
+        this player ends up there.”
+      </StatsSectionIntro>
       <div className="stats-captain-grid">
         {affinity.map((entry) => {
           const captain = captainById.get(entry.captainId);
@@ -411,10 +446,18 @@ function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
                       <li key={row.pickId}>
                         <span className="stats-captain-card-pick">
                           <PickThumb pick={pick} size={36} />
-                          <span>{pick.label}</span>
+                          <span className="stats-captain-card-pick-label">
+                            <span>{pick.label}</span>
+                            <span className="stats-captain-card-pick-detail">
+                              {formatCount(row.count, "spot")}
+                            </span>
+                          </span>
                         </span>
-                        <span className="stats-pct">
+                        <span className="stats-captain-card-pick-pct">
                           {formatPercent(row.percent)}
+                          <span className="stats-captain-card-pick-pct-label">
+                            of {captain.label}&apos;s picks
+                          </span>
                         </span>
                       </li>
                     );
@@ -443,12 +486,15 @@ function OfficialSection({ stats, officialUpdatedAt }: OfficialSectionProps) {
   return (
     <div className="card stats-section">
       <h2>Official Draft Comparison</h2>
-      <p>
-        Official draft locked in on <strong>{formatDate(officialUpdatedAt)}</strong>.
-        Best guess so far: <strong>{stats.bestCorrect}</strong> slot
-        {stats.bestCorrect === 1 ? "" : "s"} correct. Average:{" "}
-        <strong>{formatNumber(stats.averageCorrect, 1)}</strong>.
-      </p>
+      <StatsSectionIntro
+        note="Each bar shows how many guessers got exactly that many slots right compared to the official draft."
+      >
+        Official draft locked in on{" "}
+        <strong>{formatDate(officialUpdatedAt)}</strong>. Best guess:{" "}
+        <strong>{stats.bestCorrect}</strong> correct slot
+        {stats.bestCorrect === 1 ? "" : "s"}. Average across all guessers:{" "}
+        <strong>{formatNumber(stats.averageCorrect, 1)}</strong> correct.
+      </StatsSectionIntro>
       {trimmedHistogram.length > 0 ? (
         <div className="stats-official-histogram">
           {trimmedHistogram.map((bucket) => {
@@ -465,7 +511,8 @@ function OfficialSection({ stats, officialUpdatedAt }: OfficialSectionProps) {
                   />
                 </div>
                 <span className="stats-official-row-count">
-                  {bucket.count} ({formatPercent(bucket.percent)})
+                  {formatCount(bucket.count, "guesser")} (
+                  {formatPercent(bucket.percent)} of all guessers)
                 </span>
               </div>
             );

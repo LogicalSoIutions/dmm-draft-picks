@@ -622,6 +622,28 @@ p {
   gap: 12px;
 }
 
+.stats-section-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats-section-lead {
+  margin: 0;
+  color: var(--osrs-parchment);
+  line-height: 1.5;
+}
+
+.stats-section-note {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 215, 110, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--osrs-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .stats-headline {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -866,9 +888,18 @@ p {
 
 .stats-pick-card-stats dd {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: 13px;
   color: var(--osrs-parchment);
   text-shadow: var(--osrs-shadow-1);
+}
+
+.stats-stat-detail {
+  color: var(--osrs-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .stats-pick-card-stats dd strong {
@@ -1014,6 +1045,50 @@ p {
   align-items: center;
   gap: 6px;
   min-width: 0;
+}
+
+.stats-captain-card-pick-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.stats-captain-card-pick-label > span:first-child {
+  color: var(--osrs-parchment-bright);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stats-captain-card-pick-detail {
+  color: var(--osrs-text-muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stats-captain-card-pick-pct {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  color: var(--osrs-gold);
+  font-size: 14px;
+  font-weight: 800;
+  text-shadow: var(--osrs-shadow-1);
+  flex-shrink: 0;
+}
+
+.stats-captain-card-pick-pct-label {
+  color: var(--osrs-text-muted);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: right;
+  max-width: 72px;
+  line-height: 1.2;
 }
 
 .stats-captain-card-pick .stats-thumb {
