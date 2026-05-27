@@ -1,6 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useState } from "react";
 
 import {
   captains,
@@ -308,7 +310,16 @@ type PickBreakdownProps = {
 };
 
 function PickBreakdown({ pickStats }: PickBreakdownProps) {
+  const [sortBy, setSortBy] = useState<"default" | "averageSlot">("default");
+
   const sorted = [...pickStats].sort((a, b) => {
+    if (sortBy === "averageSlot") {
+      const aVal = a.averageSlot ?? Infinity;
+      const bVal = b.averageSlot ?? Infinity;
+      if (aVal !== bVal) {
+        return aVal - bVal;
+      }
+    }
     if (b.totalAppearances !== a.totalAppearances) {
       return b.totalAppearances - a.totalAppearances;
     }
@@ -319,7 +330,25 @@ function PickBreakdown({ pickStats }: PickBreakdownProps) {
   });
   return (
     <div className="card stats-section">
-      <h2>Per-Pick Breakdown</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <h2>Per-Pick Breakdown</h2>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            className={`button ${sortBy === "default" ? "" : "secondary"}`}
+            style={{ padding: "6px 12px", fontSize: "11px" }}
+            onClick={() => setSortBy("default")}
+          >
+            Default
+          </button>
+          <button
+            className={`button ${sortBy === "averageSlot" ? "" : "secondary"}`}
+            style={{ padding: "6px 12px", fontSize: "11px" }}
+            onClick={() => setSortBy("averageSlot")}
+          >
+            Average Slot
+          </button>
+        </div>
+      </div>
       <p>
         Where each pick lands across all submitted drafts. Bars show the slot
         distribution; the taller the bar, the more people put them there.
@@ -364,8 +393,8 @@ function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
                 <Image
                   src={captain.imagePath}
                   alt={captain.label}
-                  width={56}
-                  height={56}
+                  width={300}
+                  height={300}
                   className="participant-image"
                 />
               </div>
@@ -381,7 +410,7 @@ function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
                     return (
                       <li key={row.pickId}>
                         <span className="stats-captain-card-pick">
-                          <PickThumb pick={pick} size={28} />
+                          <PickThumb pick={pick} size={36} />
                           <span>{pick.label}</span>
                         </span>
                         <span className="stats-pct">

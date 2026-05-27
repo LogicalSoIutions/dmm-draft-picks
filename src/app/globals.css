@@ -775,8 +775,32 @@ p {
 
 .stats-pick-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
+}
+
+@media (max-width: 1280px) {
+  .stats-pick-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .stats-pick-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-pick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .stats-pick-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stats-pick-card {
@@ -928,7 +952,16 @@ p {
 .stats-captain-card-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+}
+
+.stats-captain-card-header .participant-image {
+  width: 300px;
+  height: 300px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
 }
 
 .stats-captain-card-header strong {
@@ -954,7 +987,7 @@ p {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .stats-captain-card-list li {
@@ -962,13 +995,13 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--osrs-parchment);
   text-shadow: var(--osrs-shadow-1);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 1px solid var(--osrs-rule);
-  padding-bottom: 4px;
+  padding-bottom: 6px;
 }
 
 .stats-captain-card-list li:last-child {
@@ -984,8 +1017,8 @@ p {
 }
 
 .stats-captain-card-pick .stats-thumb {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
 }
 
 .stats-empty {
