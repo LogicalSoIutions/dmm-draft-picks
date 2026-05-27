@@ -10,7 +10,19 @@ export default async function NewDraftPage() {
   if (!user) {
     return (
       <main>
-        <h1>New Draft</h1>
+        <header className="page-header">
+          <div className="page-header-title">
+            <h1>New Draft</h1>
+          </div>
+          <div className="page-header-actions">
+            <Link className="button secondary" href="/stats">
+              View Stats
+            </Link>
+            <Link className="button" href="/">
+              Back to Home
+            </Link>
+          </div>
+        </header>
         <p>You need to authenticate with Kick before creating a draft.</p>
         <p>
           We only store your Kick username and auth token data required to keep
@@ -27,7 +39,19 @@ export default async function NewDraftPage() {
   const initialCaptainAssignments = existingDraft?.captainAssignments ?? {};
   return (
     <main>
-      <h1>{existingDraft ? "Edit Your Draft" : "Create Draft"}</h1>
+      <header className="page-header">
+        <div className="page-header-title">
+          <h1>{existingDraft ? "Edit Your Draft" : "Create Draft"}</h1>
+        </div>
+        <div className="page-header-actions">
+          <Link className="button secondary" href="/stats">
+            View Stats
+          </Link>
+          <Link className="button" href="/">
+            Back to Home
+          </Link>
+        </div>
+      </header>
       <p>Signed in as {user.kickUsername}.</p>
       <p>
         We only store your Kick username and auth token data required to keep you

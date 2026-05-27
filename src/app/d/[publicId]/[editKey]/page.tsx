@@ -19,7 +19,19 @@ export default async function EditDraftPage({ params }: EditDraftPageProps) {
     const nextPath = encodeURIComponent(`/d/${publicId}/${editKey}`);
     return (
       <main>
-        <h1>Edit Draft</h1>
+        <header className="page-header">
+          <div className="page-header-title">
+            <h1>Edit Draft</h1>
+          </div>
+          <div className="page-header-actions">
+            <Link className="button secondary" href="/stats">
+              View Stats
+            </Link>
+            <Link className="button" href="/">
+              Back to Home
+            </Link>
+          </div>
+        </header>
         <p>You need to authenticate with Kick before editing this draft.</p>
         <p>
           We only store your Kick username and auth token data required to keep
@@ -35,14 +47,38 @@ export default async function EditDraftPage({ params }: EditDraftPageProps) {
   if (!draft || !authorizeDraftAccess({ draft, userId: user.userId, editKey })) {
     return (
       <main>
-        <h1>Edit Draft</h1>
+        <header className="page-header">
+          <div className="page-header-title">
+            <h1>Edit Draft</h1>
+          </div>
+          <div className="page-header-actions">
+            <Link className="button secondary" href="/stats">
+              View Stats
+            </Link>
+            <Link className="button" href="/">
+              Back to Home
+            </Link>
+          </div>
+        </header>
         <p>Invalid draft URL or you do not have access to this draft.</p>
       </main>
     );
   }
   return (
     <main>
-      <h1>Edit Draft</h1>
+      <header className="page-header">
+        <div className="page-header-title">
+          <h1>Edit Draft</h1>
+        </div>
+        <div className="page-header-actions">
+          <Link className="button secondary" href="/stats">
+            View Stats
+          </Link>
+          <Link className="button" href="/">
+            Back to Home
+          </Link>
+        </div>
+      </header>
       <p>Signed in as {user.kickUsername}.</p>
       <p>
         We only store your Kick username and auth token data required to keep you
