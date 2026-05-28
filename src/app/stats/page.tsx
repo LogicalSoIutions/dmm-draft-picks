@@ -52,7 +52,7 @@ export default function StatsPage() {
     : null;
 
   return (
-    <main>
+    <main className="stats-page">
       <header className="page-header">
         <div className="page-header-title">
           <h1>Draft Stats</h1>

@@ -402,14 +402,14 @@ function PickBreakdown({ pickStats }: PickBreakdownProps) {
         <div style={{ display: "flex", gap: 8 }}>
           <button
             className={`button ${sortBy === "default" ? "" : "secondary"}`}
-            style={{ padding: "6px 12px", fontSize: "11px" }}
+            style={{ padding: "6px 12px", fontSize: "13px" }}
             onClick={() => setSortBy("default")}
           >
             Default
           </button>
           <button
             className={`button ${sortBy === "averageSlot" ? "" : "secondary"}`}
-            style={{ padding: "6px 12px", fontSize: "11px" }}
+            style={{ padding: "6px 12px", fontSize: "13px" }}
             onClick={() => setSortBy("averageSlot")}
           >
             Average Slot

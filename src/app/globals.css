@@ -614,6 +614,23 @@ p {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  font-size: 16px;
+}
+
+.stats-layout h2 {
+  font-size: 22px;
+}
+
+.stats-layout h3 {
+  font-size: 17px;
+}
+
+.stats-layout .captain-column-header strong {
+  font-size: 16px;
+}
+
+.stats-page h1 {
+  font-size: 36px;
 }
 
 .stats-section {
@@ -632,6 +649,7 @@ p {
   margin: 0;
   color: var(--osrs-parchment);
   line-height: 1.5;
+  font-size: 16px;
 }
 
 .stats-section-note {
@@ -640,7 +658,7 @@ p {
   border: 1px solid rgba(255, 215, 110, 0.18);
   background: rgba(0, 0, 0, 0.22);
   color: var(--osrs-text-muted);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.45;
 }
 
@@ -665,7 +683,7 @@ p {
 }
 
 .stats-headline-value {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
   color: var(--osrs-gold-bright);
   text-shadow: var(--osrs-shadow-2);
@@ -673,11 +691,11 @@ p {
 }
 
 .stats-headline-value-small {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .stats-headline-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--osrs-parchment-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -704,7 +722,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--osrs-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -714,7 +732,7 @@ p {
 .stats-consensus-slot-number {
   color: var(--osrs-orange);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.06em;
 }
 
@@ -733,7 +751,7 @@ p {
 
 .stats-consensus-slot-top-text strong {
   color: var(--osrs-parchment-bright);
-  font-size: 13px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   text-shadow: var(--osrs-shadow-2);
@@ -744,14 +762,14 @@ p {
 
 .stats-consensus-slot-top-pct {
   color: var(--osrs-gold);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   text-shadow: var(--osrs-shadow-1);
 }
 
 .stats-consensus-slot-empty {
   color: var(--osrs-text-dim);
-  font-size: 12px;
+  font-size: 14px;
   font-style: italic;
 }
 
@@ -771,7 +789,7 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--osrs-parchment-muted);
   text-shadow: var(--osrs-shadow-1);
   text-transform: uppercase;
@@ -852,14 +870,14 @@ p {
 
 .stats-pick-card-headline strong {
   color: var(--osrs-parchment-bright);
-  font-size: 15px;
+  font-size: 17px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   text-shadow: var(--osrs-shadow-2);
 }
 
 .stats-pick-card-meta {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--osrs-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -879,7 +897,7 @@ p {
 }
 
 .stats-pick-card-stats dt {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--osrs-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -891,14 +909,14 @@ p {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--osrs-parchment);
   text-shadow: var(--osrs-shadow-1);
 }
 
 .stats-stat-detail {
   color: var(--osrs-text-muted);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.35;
 }
 
@@ -909,7 +927,7 @@ p {
 
 .stats-pct {
   color: var(--osrs-text-muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .stats-pick-histogram {
@@ -989,7 +1007,7 @@ p {
 }
 
 .stats-pick-histogram-tooltip-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   color: var(--osrs-gold-bright);
   text-transform: uppercase;
@@ -998,14 +1016,14 @@ p {
 }
 
 .stats-pick-histogram-tooltip-count {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--osrs-parchment-bright);
   text-shadow: var(--osrs-shadow-1);
 }
 
 .stats-pick-histogram-tooltip-pct {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--osrs-text-muted);
   line-height: 1.35;
   text-shadow: var(--osrs-shadow-1);
@@ -1024,8 +1042,8 @@ p {
 
 .stats-pick-histogram-slot {
   position: absolute;
-  bottom: -14px;
-  font-size: 9px;
+  bottom: -16px;
+  font-size: 11px;
   color: var(--osrs-text-dim);
   letter-spacing: 0.04em;
 }
@@ -1079,7 +1097,7 @@ p {
 .stats-captain-card-header strong {
   display: block;
   color: var(--osrs-gold-bright);
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-shadow: var(--osrs-shadow-2);
@@ -1087,7 +1105,7 @@ p {
 
 .stats-captain-card-meta {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--osrs-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1107,7 +1125,7 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--osrs-parchment);
   text-shadow: var(--osrs-shadow-1);
   text-transform: uppercase;
@@ -1137,14 +1155,14 @@ p {
 
 .stats-captain-card-pick-label > span:first-child {
   color: var(--osrs-parchment-bright);
-  font-size: 13px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .stats-captain-card-pick-detail {
   color: var(--osrs-text-muted);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1155,7 +1173,7 @@ p {
   align-items: flex-end;
   gap: 1px;
   color: var(--osrs-gold);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   text-shadow: var(--osrs-shadow-1);
   flex-shrink: 0;
@@ -1163,7 +1181,7 @@ p {
 
 .stats-captain-card-pick-pct-label {
   color: var(--osrs-text-muted);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1179,7 +1197,7 @@ p {
 
 .stats-empty {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--osrs-text-dim);
 }
 
@@ -1191,14 +1209,14 @@ p {
 
 .stats-official-row {
   display: grid;
-  grid-template-columns: 96px 1fr 120px;
+  grid-template-columns: 108px 1fr 140px;
   align-items: center;
   gap: 8px;
 }
 
 .stats-official-row-label,
 .stats-official-row-count {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--osrs-parchment-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1242,7 +1260,7 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--osrs-parchment);
   text-shadow: var(--osrs-shadow-1);
   text-transform: uppercase;
@@ -1257,7 +1275,7 @@ p {
 
 .stats-official-leader-meta {
   color: var(--osrs-text-muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 @media (max-width: 540px) {
@@ -1266,7 +1284,7 @@ p {
   }
 
   .stats-official-row {
-    grid-template-columns: 80px 1fr 96px;
+    grid-template-columns: 88px 1fr 112px;
   }
 }
 
