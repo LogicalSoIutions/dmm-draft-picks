@@ -61,8 +61,7 @@ export type CaptainAffinityPick = {
 
 export type CaptainAffinity = {
   captainId: string;
-  totalAssignments: number;
-  topPicks: CaptainAffinityPick[];
+  roster: CaptainAffinityPick[];
 };
 
 export type OfficialMatchLeaderEntry = {
@@ -98,7 +97,7 @@ type SortableEntry = {
 };
 
 const TOP_SLOT_ENTRIES = 3;
-const TOP_CAPTAIN_PICKS = 4;
+const ROSTER_SIZE = picks.length / CAPTAIN_COUNT;
 const LEADERBOARD_LIMIT = 10;
 
 const safePercent = (count: number, total: number): number => {
@@ -299,43 +298,115 @@ export const computePickStats = (
   return stats;
 };
 
-export const computeCaptainAffinity = (
-  slotAssignmentsList: (string | null)[][],
-): CaptainAffinity[] => {
-  const captainPickCounts: Map<string, number>[] = captains.map(
-    () => new Map<string, number>(),
-  );
-  const captainTotals: number[] = new Array(CAPTAIN_COUNT).fill(0);
-  for (const assignments of slotAssignmentsList) {
-    for (let slotIndex = 0; slotIndex < assignments.length; slotIndex += 1) {
-      const pickId = assignments[slotIndex];
-      if (!pickId) {
+type PickCaptainPreference = {
+  pickId: string;
+  margin: number;
+  preferences: Array<{ captainId: string; count: number }>;
+};
+
+const buildPickCaptainCounts = (
+  drafts: DraftInput[],
+): Map<string, Map<string, number>> => {
+  const counts = new Map<string, Map<string, number>>();
+  for (const pick of picks) {
+    counts.set(pick.id, new Map());
+  }
+  for (const draft of drafts) {
+    for (const pickId of draft.picksOrder) {
+      const captainId = draft.captainAssignments[pickId];
+      const bucket = counts.get(pickId);
+      if (!bucket || !captainId) {
         continue;
       }
-      const captainIndex = slotToCaptainIndex(slotIndex + 1);
-      const bucket = captainPickCounts[captainIndex];
-      if (!bucket) {
-        continue;
-      }
-      bucket.set(pickId, (bucket.get(pickId) ?? 0) + 1);
-      captainTotals[captainIndex] += 1;
+      bucket.set(captainId, (bucket.get(captainId) ?? 0) + 1);
     }
   }
-  return captains.map((captain, captainIndex) => {
-    const bucket = captainPickCounts[captainIndex];
-    const total = captainTotals[captainIndex];
-    const entries = toBucketEntries(bucket, total);
-    const topPicks: CaptainAffinityPick[] = entries
-      .slice(0, TOP_CAPTAIN_PICKS)
-      .map((entry) => ({
-        pickId: entry.key,
-        count: entry.count,
-        percent: entry.percent,
-      }));
+  return counts;
+};
+
+const buildPickPreferences = (
+  countsByPick: Map<string, Map<string, number>>,
+): PickCaptainPreference[] =>
+  picks.map((pick) => {
+    const counts = countsByPick.get(pick.id) ?? new Map<string, number>();
+    const preferences = captains
+      .map((captain) => ({
+        captainId: captain.id,
+        count: counts.get(captain.id) ?? 0,
+      }))
+      .sort((a, b) =>
+        sortByCountDesc(
+          { key: a.captainId, count: a.count },
+          { key: b.captainId, count: b.count },
+        ),
+      );
+    const top = preferences[0]?.count ?? 0;
+    const runnerUp = preferences[1]?.count ?? 0;
+    return {
+      pickId: pick.id,
+      margin: top - runnerUp,
+      preferences,
+    };
+  });
+
+const assignConsensusRosters = (
+  preferences: PickCaptainPreference[],
+): Map<string, string[]> => {
+  const rosters = new Map<string, string[]>(
+    captains.map((captain) => [captain.id, []]),
+  );
+  const sorted = [...preferences].sort((a, b) => {
+    if (b.margin !== a.margin) {
+      return b.margin - a.margin;
+    }
+    return a.pickId.localeCompare(b.pickId);
+  });
+  for (const entry of sorted) {
+    for (const preference of entry.preferences) {
+      const roster = rosters.get(preference.captainId);
+      if (!roster || roster.length >= ROSTER_SIZE) {
+        continue;
+      }
+      roster.push(entry.pickId);
+      break;
+    }
+  }
+  return rosters;
+};
+
+export const computeCaptainAffinity = (
+  drafts: DraftInput[],
+): CaptainAffinity[] => {
+  const totalDrafts = drafts.length;
+  if (totalDrafts === 0) {
+    return captains.map((captain) => ({
+      captainId: captain.id,
+      roster: [],
+    }));
+  }
+  const countsByPick = buildPickCaptainCounts(drafts);
+  const preferences = buildPickPreferences(countsByPick);
+  const rosters = assignConsensusRosters(preferences);
+  return captains.map((captain) => {
+    const pickIds = rosters.get(captain.id) ?? [];
+    const roster: CaptainAffinityPick[] = pickIds
+      .map((pickId) => {
+        const count = countsByPick.get(pickId)?.get(captain.id) ?? 0;
+        return {
+          pickId,
+          count,
+          percent: safePercent(count, totalDrafts),
+        };
+      })
+      .sort((a, b) =>
+        sortByCountDesc(
+          { key: a.pickId, count: a.count },
+          { key: b.pickId, count: b.count },
+        ),
+      );
     return {
       captainId: captain.id,
-      totalAssignments: total,
-      topPicks,
+      roster,
     };
   });
 };

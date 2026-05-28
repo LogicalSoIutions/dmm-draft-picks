@@ -131,17 +131,40 @@ describe("computePickStats", () => {
 });
 
 describe("computeCaptainAffinity", () => {
-  it("returns top picks per captain based on snake-draft placement", () => {
-    const slotAssignmentsList = buildAllSlotAssignments([
+  it("builds a full predicted roster for each captain", () => {
+    const drafts = [
       makeDraft(defaultPickOrder),
       makeDraft(defaultPickOrder),
-    ]);
-    const affinity = computeCaptainAffinity(slotAssignmentsList);
+    ];
+    const affinity = computeCaptainAffinity(drafts);
+    expect(affinity).toHaveLength(captains.length);
+    const rosteredPickIds = affinity.flatMap((entry) =>
+      entry.roster.map((row) => row.pickId),
+    );
+    expect(rosteredPickIds).toHaveLength(picks.length);
+    expect(new Set(rosteredPickIds).size).toBe(picks.length);
+    for (const entry of affinity) {
+      expect(entry.roster).toHaveLength(picks.length / captains.length);
+      expect(entry.roster[0].percent).toBeGreaterThan(0);
+    }
+  });
+
+  it("matches unanimous drafts exactly", () => {
+    const draft = makeDraft(defaultPickOrder);
+    const affinity = computeCaptainAffinity([draft, draft, draft]);
+    for (const entry of affinity) {
+      for (const row of entry.roster) {
+        expect(row.percent).toBeCloseTo(100);
+        expect(row.count).toBe(3);
+      }
+    }
+  });
+
+  it("returns empty rosters when no drafts exist", () => {
+    const affinity = computeCaptainAffinity([]);
     expect(affinity).toHaveLength(captains.length);
     for (const entry of affinity) {
-      expect(entry.totalAssignments).toBeGreaterThan(0);
-      expect(entry.topPicks.length).toBeGreaterThan(0);
-      expect(entry.topPicks[0].percent).toBeGreaterThan(0);
+      expect(entry.roster).toEqual([]);
     }
   });
 });

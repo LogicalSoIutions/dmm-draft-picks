@@ -32,7 +32,7 @@ export default function StatsPage() {
   const summary = computeSummary(draftInputs);
   const slotConsensus = computeSlotConsensus(slotAssignmentsList);
   const pickStats = computePickStats(slotAssignmentsList);
-  const captainAffinity = computeCaptainAffinity(slotAssignmentsList);
+  const captainAffinity = computeCaptainAffinity(draftInputs);
 
   const officialMatchDrafts: OfficialMatchDraftInput[] = drafts.map((draft) => ({
     publicId: draft.publicId,

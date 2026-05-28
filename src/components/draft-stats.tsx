@@ -417,7 +417,7 @@ function PickBreakdown({ pickStats }: PickBreakdownProps) {
         </div>
       </div>
       <StatsSectionIntro
-        note="Percentages here are per player — e.g. “93% of drafts” means that many guessers put this player on that team or in that slot. This is different from the captain roster view below."
+        note="Percentages here are per player — e.g. “93% of drafts” means that many guessers put this player on that team or in that slot. See Predicted Rosters above for each captain’s full team."
       >
         For each player, where guessers usually place them on the board. Taller
         bars mean more people picked that overall draft position.
@@ -442,13 +442,12 @@ type CaptainAffinitySectionProps = {
 function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
   return (
     <div className="card stats-section">
-      <h2>Popular Picks per Captain</h2>
+      <h2>Predicted Rosters</h2>
       <StatsSectionIntro
-        note="Each captain gets 4 players per draft, so one player can’t take more than ~25% of a captain’s spots even if everyone agrees. Only the top 4 players are shown — percentages won’t add to 100%."
+        note="Each player appears on exactly one roster. When votes tie, players are placed on the captain they’re assigned to most often."
       >
-        Who guessers most often put on each captain’s team. Percentages are
-        share of that captain’s roster spots across all drafts, not “chance
-        this player ends up there.”
+        The crowd&apos;s best guess for each captain&apos;s full team of four,
+        built from all submitted drafts.
       </StatsSectionIntro>
       <div className="stats-captain-grid">
         {affinity.map((entry) => {
@@ -470,11 +469,11 @@ function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
                   className="participant-image"
                 />
               </div>
-              {entry.topPicks.length === 0 ? (
+              {entry.roster.length === 0 ? (
                 <p className="stats-empty">No picks assigned yet.</p>
               ) : (
                 <ul className="stats-captain-card-list">
-                  {entry.topPicks.map((row) => {
+                  {entry.roster.map((row) => {
                     const pick = pickById.get(row.pickId);
                     if (!pick) {
                       return null;
@@ -486,14 +485,14 @@ function CaptainAffinitySection({ affinity }: CaptainAffinitySectionProps) {
                           <span className="stats-captain-card-pick-label">
                             <span>{pick.label}</span>
                             <span className="stats-captain-card-pick-detail">
-                              {formatCount(row.count, "spot")}
+                              {formatCount(row.count, "draft")}
                             </span>
                           </span>
                         </span>
                         <span className="stats-captain-card-pick-pct">
                           {formatPercent(row.percent)}
                           <span className="stats-captain-card-pick-pct-label">
-                            of {captain.label}&apos;s picks
+                            of drafts
                           </span>
                         </span>
                       </li>
@@ -595,6 +594,7 @@ export function DraftStats({
   return (
     <div className="stats-layout">
       <HeadlineNumbers summary={summary} />
+      <CaptainAffinitySection affinity={captainAffinity} />
       <ConsensusBoard slotConsensus={slotConsensus} />
       {officialMatchStats && officialMatchStats.totalDrafts > 0 ? (
         <OfficialSection
@@ -603,7 +603,6 @@ export function DraftStats({
         />
       ) : null}
       <PickBreakdown pickStats={pickStats} />
-      <CaptainAffinitySection affinity={captainAffinity} />
     </div>
   );
 }
