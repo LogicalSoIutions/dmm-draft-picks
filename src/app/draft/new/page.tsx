@@ -3,6 +3,10 @@ import Link from "next/link";
 import { DraftEditor } from "@/components/draft-editor";
 import { defaultPickOrder } from "@/data/participants";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
+import {
+  formatNewDraftSubmissionDeadline,
+  isNewDraftSubmissionOpen,
+} from "@/lib/draft-deadline";
 import { getDraftByOwnerUserId } from "@/server/db/queries";
 
 export default async function NewDraftPage() {
@@ -35,6 +39,35 @@ export default async function NewDraftPage() {
     );
   }
   const existingDraft = getDraftByOwnerUserId(user.userId);
+  const newDraftsOpen = isNewDraftSubmissionOpen();
+  const submissionDeadlineLabel = formatNewDraftSubmissionDeadline();
+  if (!existingDraft && !newDraftsOpen) {
+    return (
+      <main>
+        <header className="page-header">
+          <div className="page-header-title">
+            <h1>Submissions Closed</h1>
+          </div>
+          <div className="page-header-actions">
+            <Link className="button secondary" href="/stats">
+              View Stats
+            </Link>
+            <Link className="button" href="/">
+              Back to Home
+            </Link>
+          </div>
+        </header>
+        <p>Signed in as {user.kickUsername}.</p>
+        <p className="status error">
+          New draft submissions closed at {submissionDeadlineLabel}.
+        </p>
+        <p>
+          You can still browse submitted drafts and stats, but new entries are
+          no longer accepted.
+        </p>
+      </main>
+    );
+  }
   const initialOrder = existingDraft?.picksOrder ?? defaultPickOrder;
   const initialCaptainAssignments = existingDraft?.captainAssignments ?? {};
   return (
@@ -62,7 +95,9 @@ export default async function NewDraftPage() {
           Your account has one draft. Saving here updates that same draft instead
           of creating a new one.
         </p>
-      ) : null}
+      ) : (
+        <p>New draft submissions close at {submissionDeadlineLabel}.</p>
+      )}
       <DraftEditor
         initialOrder={initialOrder}
         initialCaptainAssignments={initialCaptainAssignments}

@@ -24,6 +24,9 @@ const commonSchema = z.object({
     .string()
     .regex(/^\d+$/)
     .default("60"),
+  DRAFT_NEW_SUBMISSION_DEADLINE: z
+    .string()
+    .default("2026-05-31T19:00:00+01:00"),
   ADMIN_KICK_USERNAMES: z.string().optional().default(""),
 });
 

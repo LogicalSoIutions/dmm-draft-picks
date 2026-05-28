@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedUserFromRequest } from "@/lib/auth";
+import { isNewDraftSubmissionOpen } from "@/lib/draft-deadline";
 import {
   createDraftIds,
   validateCaptainAssignments,
@@ -52,8 +53,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const picksOrder = validation.order;
   const normalizedAssignments = assignmentValidation.assignments;
-  const ids = createDraftIds();
   const existingDraft = getDraftByOwnerUserId(user.userId);
+  if (!existingDraft && !isNewDraftSubmissionOpen()) {
+    return NextResponse.json(
+      { error: "New draft submissions are closed." },
+      { status: 403 },
+    );
+  }
+  const ids = createDraftIds();
   if (existingDraft) {
     const updatedDraft = updateDraftOrder({
       publicId: existingDraft.publicId,

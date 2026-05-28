@@ -18,14 +18,33 @@ const parseTimestamp = (value: string): Date => {
   return new Date(`${normalized}Z`);
 };
 
+const easternDateTimeFormatOptions = (
+  long = false,
+): Intl.DateTimeFormatOptions => ({
+  timeZone: "America/New_York",
+  ...(long ? { weekday: "long", month: "long" } : { month: "numeric" }),
+  day: "numeric",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZoneName: "short",
+});
+
+export const formatEasternDateTimeFromDate = (
+  date: Date,
+  { long = false }: { long?: boolean } = {},
+): string =>
+  new Intl.DateTimeFormat("en-US", easternDateTimeFormatOptions(long)).format(
+    date,
+  );
+
 /**
- * Format a UTC timestamp string for display in US Eastern time, with an
- * explicit `"EST"` suffix.
+ * Format a UTC timestamp string for display in US Eastern time.
  */
 export const formatEasternDateTime = (value: string): string => {
   const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return `${date.toLocaleString("en-US", { timeZone: "America/New_York" })} EST`;
+  return formatEasternDateTimeFromDate(date);
 };

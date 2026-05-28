@@ -2,6 +2,10 @@ import Link from "next/link";
 
 import { DraftCarousel } from "@/components/draft-carousel";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
+import {
+  formatNewDraftSubmissionDeadline,
+  isNewDraftSubmissionOpen,
+} from "@/lib/draft-deadline";
 import { listAllDraftsWithOwner } from "@/server/db/queries";
 
 type HomePageProps = {
@@ -16,6 +20,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     : authErrorValue;
   const user = await getAuthenticatedUserFromServer();
   const drafts = listAllDraftsWithOwner();
+  const newDraftsOpen = isNewDraftSubmissionOpen();
+  const submissionDeadlineLabel = formatNewDraftSubmissionDeadline();
 
   return (
     <main>
@@ -27,6 +33,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           win, the first two people to enter the winning draft will face off in
           a <strong>Split or Steal</strong>.
         </p>
+        {newDraftsOpen ? (
+          <p className="prize-banner-text">
+            New draft submissions close at{" "}
+            <strong>{submissionDeadlineLabel}</strong>.
+          </p>
+        ) : (
+          <p className="prize-banner-text">
+            New draft submissions closed at{" "}
+            <strong>{submissionDeadlineLabel}</strong>.
+          </p>
+        )}
       </aside>
       <header className="page-header">
         <div className="page-header-title">

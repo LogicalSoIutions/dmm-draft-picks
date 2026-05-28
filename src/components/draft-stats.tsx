@@ -222,6 +222,48 @@ function ConsensusBoard({ slotConsensus }: ConsensusBoardProps) {
   );
 }
 
+type PickHistogramBarProps = {
+  pickLabel: string;
+  slotNumber: number;
+  count: number;
+  percent: number;
+  heightPct: number;
+};
+
+function PickHistogramBar({
+  pickLabel,
+  slotNumber,
+  count,
+  percent,
+  heightPct,
+}: PickHistogramBarProps) {
+  const tooltipLabel = `Pick #${slotNumber}: ${formatCount(count, "draft")}, ${formatPercent(percent)} of drafts with ${pickLabel}`;
+  return (
+    <div
+      className="stats-pick-histogram-bar"
+      tabIndex={0}
+      aria-label={tooltipLabel}
+    >
+      <span className="stats-pick-histogram-tooltip" role="tooltip">
+        <span className="stats-pick-histogram-tooltip-title">
+          Pick #{slotNumber}
+        </span>
+        <span className="stats-pick-histogram-tooltip-count">
+          {formatCount(count, "draft")}
+        </span>
+        <span className="stats-pick-histogram-tooltip-pct">
+          {formatPercent(percent)} of drafts with {pickLabel}
+        </span>
+      </span>
+      <span
+        className="stats-pick-histogram-fill"
+        style={{ height: `${heightPct}%` }}
+      />
+      <span className="stats-pick-histogram-slot">{slotNumber}</span>
+    </div>
+  );
+}
+
 type PickStatCardProps = {
   pick: Participant;
   stats: PickStats;
@@ -314,19 +356,14 @@ function PickStatCard({ pick, stats }: PickStatCardProps) {
               ? (bucket.count / histogramMax) * 100
               : 0;
             return (
-              <div
+              <PickHistogramBar
                 key={bucket.slotNumber}
-                className="stats-pick-histogram-bar"
-                title={`Pick #${bucket.slotNumber}: ${formatCount(bucket.count, "draft")} (${formatPercent(bucket.percent)} of drafts with ${pick.label})`}
-              >
-                <span
-                  className="stats-pick-histogram-fill"
-                  style={{ height: `${heightPct}%` }}
-                />
-                <span className="stats-pick-histogram-slot">
-                  {bucket.slotNumber}
-                </span>
-              </div>
+                pickLabel={pick.label}
+                slotNumber={bucket.slotNumber}
+                count={bucket.count}
+                percent={bucket.percent}
+                heightPct={heightPct}
+              />
             );
           })}
         </div>
