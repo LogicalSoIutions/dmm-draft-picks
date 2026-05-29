@@ -11,7 +11,10 @@ const userLimit = Number.parseInt(
 const windowMs = 60_000;
 
 export function proxy(request: NextRequest): NextResponse {
-  if (!request.nextUrl.pathname.startsWith("/api/drafts")) {
+  const pathname = request.nextUrl.pathname;
+  const isDraft = pathname.startsWith("/api/drafts");
+  const isBingo = pathname.startsWith("/api/bingo");
+  if (!isDraft && !isBingo) {
     return NextResponse.next();
   }
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
@@ -21,15 +24,16 @@ export function proxy(request: NextRequest): NextResponse {
       { status: 401 },
     );
   }
+  const bucket = isBingo ? "bingo_user" : "draft_user";
   const userAllowed = consumeRateLimit(
-    "draft_user",
+    bucket,
     sessionCookie,
     userLimit,
     windowMs,
   );
   if (!userAllowed) {
     return NextResponse.json(
-      { error: "Too many draft requests from this user session" },
+      { error: "Too many requests from this user session" },
       { status: 429 },
     );
   }
@@ -37,5 +41,5 @@ export function proxy(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  matcher: ["/api/drafts/:path*"],
+  matcher: ["/api/drafts/:path*", "/api/bingo/:path*"],
 };

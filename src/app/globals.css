@@ -409,6 +409,20 @@ p {
   max-width: 130px;
 }
 
+.pool-slot {
+  width: 100%;
+  max-width: 130px;
+  display: flex;
+}
+
+.pick-card-placeholder {
+  width: 100%;
+  max-width: 130px;
+  display: flex;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .pool-empty {
   margin: 0;
   grid-column: 1 / -1;
@@ -1316,5 +1330,464 @@ p {
     width: 44px;
     height: 44px;
     font-size: 20px;
+  }
+}
+
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 760px;
+}
+
+.bingo-deadline-banner {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bingo-card-title {
+  text-align: center;
+}
+
+.bingo-card-subtitle {
+  text-align: center;
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 14px;
+  color: var(--osrs-parchment-bright);
+}
+
+.bingo-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--osrs-border);
+  background: linear-gradient(180deg, var(--osrs-slot-bg) 0%, var(--osrs-slot-bg-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  text-align: center;
+  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(0, 0, 0, 0.75),
+    inset -1px -1px 0 rgba(255, 215, 110, 0.08);
+}
+
+.bingo-cell.tier-easy {
+  border-color: #4f7e2f;
+}
+
+.bingo-cell.tier-medium {
+  border-color: #457bb7;
+}
+
+.bingo-cell.tier-hard {
+  border-color: #815fb1;
+}
+
+.bingo-cell.tier-insane {
+  border-color: #a54f2c;
+}
+
+.bingo-cell.tier-legendary {
+  border-color: #b9992d;
+}
+
+.bingo-cell.is-empty {
+  border-style: dashed;
+}
+
+.bingo-cell.is-over {
+  border-color: var(--osrs-gold);
+  background: rgba(255, 204, 92, 0.08);
+  box-shadow:
+    inset 0 0 0 1px var(--osrs-gold-bright),
+    0 0 12px rgba(255, 204, 92, 0.35);
+}
+
+.bingo-cell.is-autofill-pulse {
+  animation: bingo-cell-autofill-pulse 260ms ease-out;
+}
+
+.bingo-cell-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bingo-cell-free {
+  background: linear-gradient(180deg, #3a3326 0%, #241f17 100%);
+  border-style: solid;
+}
+
+.bingo-free-label {
+  font-family: var(--osrs-font);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--osrs-gold-bright);
+  text-shadow: var(--osrs-shadow-2);
+}
+
+.bingo-cell-index {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--osrs-text-dim);
+  font-family: var(--osrs-font);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.bingo-cell-tier {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--osrs-parchment-muted);
+  text-shadow: var(--osrs-shadow-1);
+}
+
+.bingo-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  color: var(--osrs-parchment);
+  text-shadow: var(--osrs-shadow-1);
+  user-select: none;
+}
+
+.bingo-tile.tier-easy {
+  border-top: 2px solid #7bd34c;
+}
+
+.bingo-tile.tier-medium {
+  border-top: 2px solid #64a8f0;
+}
+
+.bingo-tile.tier-hard {
+  border-top: 2px solid #b489f4;
+}
+
+.bingo-tile.tier-insane {
+  border-top: 2px solid #e07a44;
+}
+
+.bingo-tile.tier-legendary {
+  border-top: 2px solid #f5cd51;
+}
+
+.bingo-tile-image {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  image-rendering: pixelated;
+  background: #0a0907;
+}
+
+.bingo-tile-label {
+  font-size: 12px;
+  line-height: 1.15;
+  word-break: break-word;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bingo-tile-overlay {
+  background: linear-gradient(180deg, #1a1714 0%, #100e0b 100%);
+  border: 2px solid var(--osrs-gold);
+  padding: 6px;
+  transform: rotate(-2deg);
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.75),
+    0 0 18px rgba(255, 204, 92, 0.25);
+}
+
+.bingo-tile-draggable {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.bingo-tile-draggable:active {
+  cursor: grabbing;
+}
+
+.bingo-grid {
+  margin: 0 auto;
+}
+
+.bingo-tier-lanes {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bingo-tier-lane {
+  padding: 8px;
+  border: 2px dashed var(--osrs-border);
+  background: rgba(15, 13, 10, 0.85);
+  transition: border-color 120ms ease, background 120ms ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(0, 0, 0, 0.7),
+    inset -1px -1px 0 rgba(255, 215, 110, 0.06);
+}
+
+.bingo-tier-lane.tier-easy {
+  border-color: #4f7e2f;
+}
+
+.bingo-tier-lane.tier-medium {
+  border-color: #457bb7;
+}
+
+.bingo-tier-lane.tier-hard {
+  border-color: #815fb1;
+}
+
+.bingo-tier-lane.tier-insane {
+  border-color: #a54f2c;
+}
+
+.bingo-tier-lane.tier-legendary {
+  border-color: #b9992d;
+}
+
+.bingo-tier-lane.is-over {
+  border-color: var(--osrs-gold);
+  background: rgba(255, 204, 92, 0.06);
+  box-shadow:
+    inset 0 0 0 1px var(--osrs-gold-bright),
+    0 0 12px rgba(255, 204, 92, 0.25);
+}
+
+.bingo-tier-lane-header {
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.bingo-tier-lane-header h3 {
+  margin: 0;
+  font-size: 12px;
+}
+
+.bingo-tier-lane-header span {
+  font-size: 11px;
+  color: var(--osrs-parchment);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bingo-tier-lane-tiles {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.bingo-tier-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--osrs-text-dim);
+}
+
+.bingo-tier-lane .bingo-tile-draggable {
+  width: 100%;
+  min-height: 64px;
+  border: 2px solid var(--osrs-border);
+  background: linear-gradient(180deg, #1a1714 0%, #100e0b 100%);
+  padding: 6px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.14),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.65);
+}
+
+.autofill-button.is-running {
+  border-color: var(--osrs-gold-bright);
+  color: var(--osrs-gold-bright);
+  animation: bingo-autofill-button-glow 700ms ease-in-out infinite;
+}
+
+.bingo-admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bingo-tier-group {
+  margin-top: 12px;
+  padding: 10px;
+  border: 2px solid var(--osrs-border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.bingo-tier-header {
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bingo-tier-header h3 {
+  margin: 0;
+}
+
+.bingo-tier-count {
+  color: var(--osrs-parchment);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.bingo-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bingo-progress-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border: 2px solid var(--osrs-border);
+  background: rgba(15, 13, 10, 0.65);
+}
+
+.bingo-progress-label {
+  color: var(--osrs-parchment);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: var(--osrs-shadow-1);
+}
+
+.bingo-progress-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--osrs-parchment-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.bingo-progress-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #65b741;
+}
+
+.bingo-admin-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.bingo-admin-number {
+  font-family: var(--osrs-font);
+  font-weight: 900;
+  color: var(--osrs-gold);
+  text-align: center;
+}
+
+.bingo-admin-input {
+  width: 100%;
+  padding: 8px;
+  background: rgba(15, 13, 10, 0.85);
+  border: 2px solid var(--osrs-border);
+  color: var(--osrs-parchment);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.bingo-admin-input:focus {
+  outline: none;
+  border-color: var(--osrs-gold);
+}
+
+@keyframes bingo-cell-autofill-pulse {
+  0% {
+    transform: scale(0.9);
+    border-color: var(--osrs-gold-bright);
+    box-shadow:
+      inset 0 0 0 1px var(--osrs-gold-bright),
+      0 0 18px rgba(255, 230, 92, 0.65);
+  }
+  65% {
+    transform: scale(1.04);
+    border-color: var(--osrs-gold-bright);
+    box-shadow:
+      inset 0 0 0 1px var(--osrs-gold-bright),
+      0 0 12px rgba(255, 230, 92, 0.45);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bingo-autofill-button-glow {
+  0%,
+  100% {
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 215, 110, 0.22),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.6),
+      0 1px 0 #000,
+      0 0 0 rgba(255, 204, 92, 0);
+  }
+  50% {
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 215, 110, 0.22),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.6),
+      0 1px 0 #000,
+      0 0 14px rgba(255, 204, 92, 0.45);
+  }
+}
+
+@media (max-width: 720px) {
+  .bingo-tier-lanes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .bingo-tier-lanes {
+    grid-template-columns: 1fr;
+  }
+
+  .bingo-admin-row {
+    grid-template-columns: 24px 1fr;
+  }
+
+  .bingo-admin-number {
+    grid-row: span 3;
+  }
+
+  .bingo-admin-row .button {
+    grid-column: 2;
+    justify-self: flex-start;
+  }
+
+  .bingo-tile-label {
+    font-size: 9px;
+  }
+
+  .bingo-card-subtitle {
+    margin-bottom: 10px;
+  }
+
+  .bingo-progress-row {
+    grid-template-columns: 24px 1fr;
+  }
+
+  .bingo-progress-toggle {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
   }
 }

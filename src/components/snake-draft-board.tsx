@@ -34,6 +34,11 @@ const POOL_DROPPABLE_ID = "__pool";
 const SLOT_DROPPABLE_PREFIX = "slot-";
 
 const pickMap = new Map(picks.map((pick) => [pick.id, pick]));
+const alphabeticalPickIds = [...picks]
+  .sort((left, right) =>
+    left.label.localeCompare(right.label, undefined, { sensitivity: "base" }),
+  )
+  .map((pick) => pick.id);
 
 export type SnakeDraftPayload = {
   order: string[];
@@ -59,25 +64,6 @@ export type SnakeDraftBoardController = {
   boardProps: SnakeDraftBoardProps;
 };
 
-const buildInitialPool = (
-  initialOrder: string[],
-  slots: (string | null)[],
-): string[] => {
-  const assigned = new Set(slots.filter((value): value is string => value !== null));
-  const ordered: string[] = [];
-  for (const pickId of initialOrder) {
-    if (pickMap.has(pickId) && !assigned.has(pickId) && !ordered.includes(pickId)) {
-      ordered.push(pickId);
-    }
-  }
-  for (const pick of picks) {
-    if (!assigned.has(pick.id) && !ordered.includes(pick.id)) {
-      ordered.push(pick.id);
-    }
-  }
-  return ordered;
-};
-
 export function useSnakeDraftBoard(
   initialOrder: string[],
   initialCaptainAssignments: CaptainAssignments,
@@ -85,10 +71,6 @@ export function useSnakeDraftBoard(
   const [slotAssignments, setSlotAssignments] = useState<(string | null)[]>(() =>
     buildSlotAssignments(initialOrder, initialCaptainAssignments),
   );
-  const [poolOrder, setPoolOrder] = useState<string[]>(() => {
-    const slots = buildSlotAssignments(initialOrder, initialCaptainAssignments);
-    return buildInitialPool(initialOrder, slots);
-  });
   const [activePickId, setActivePickId] = useState<string | null>(null);
 
   const filledCount = useMemo(
@@ -96,10 +78,12 @@ export function useSnakeDraftBoard(
     [slotAssignments],
   );
   const allAssigned = filledCount === SLOT_COUNT;
-  const visiblePool = useMemo(
-    () => poolOrder.filter((pickId) => !slotAssignments.includes(pickId)),
-    [poolOrder, slotAssignments],
-  );
+  const visiblePool = useMemo(() => {
+    const assignedPickIds = new Set(
+      slotAssignments.filter((pickId): pickId is string => pickId !== null),
+    );
+    return alphabeticalPickIds.filter((pickId) => !assignedPickIds.has(pickId));
+  }, [slotAssignments]);
 
   const onDragStart = (event: DragStartEvent) => {
     setActivePickId(String(event.active.id));
@@ -130,7 +114,6 @@ export function useSnakeDraftBoard(
       const nextSlots = [...slotAssignments];
       nextSlots[sourceSlotIndex] = null;
       setSlotAssignments(nextSlots);
-      setPoolOrder((current) => (current.includes(activeId) ? current : [...current, activeId]));
       return;
     }
 
@@ -152,13 +135,6 @@ export function useSnakeDraftBoard(
       nextSlots[sourceSlotIndex] = occupant;
     }
     setSlotAssignments(nextSlots);
-    setPoolOrder((current) => {
-      let updated = current.filter((pickId) => pickId !== activeId);
-      if (sourceFromPool && occupant !== null && !updated.includes(occupant)) {
-        updated = [...updated, occupant];
-      }
-      return updated;
-    });
   };
 
   const apiPayload = useMemo<SnakeDraftPayload | null>(() => {
@@ -297,13 +273,20 @@ function CaptainColumn({
 
 function Pool({ pickIds }: { pickIds: string[] }) {
   const { setNodeRef, isOver } = useDroppable({ id: POOL_DROPPABLE_ID });
+  const availablePickIds = new Set(pickIds);
   return (
     <div ref={setNodeRef} className={`pool${isOver ? " is-over" : ""}`}>
-      {pickIds.length === 0 ? (
-        <p className="pool-empty">All picks placed. Drag one back here to remove it from a slot.</p>
-      ) : (
-        pickIds.map((pickId) => <DraggablePick key={pickId} pickId={pickId} />)
-      )}
+      {alphabeticalPickIds.map((pickId) => (
+        <div key={pickId} className="pool-slot">
+          {availablePickIds.has(pickId) ? (
+            <DraggablePick pickId={pickId} />
+          ) : (
+            <div className="pick-card-placeholder" aria-hidden="true">
+              <PickCard pickId={pickId} />
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

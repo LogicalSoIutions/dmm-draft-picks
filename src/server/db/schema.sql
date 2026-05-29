@@ -50,3 +50,30 @@ CREATE TABLE IF NOT EXISTS official_draft (
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (set_by_user_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS bingo_options (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  tiles_json TEXT NOT NULL,
+  set_by_user_id INTEGER NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (set_by_user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS bingo_progress (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  completed_tile_ids_json TEXT NOT NULL,
+  updated_by_user_id INTEGER,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (updated_by_user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS bingo_cards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  owner_user_id INTEGER NOT NULL UNIQUE,
+  layout_json TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_bingo_cards_owner_user_id ON bingo_cards (owner_user_id);

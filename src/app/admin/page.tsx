@@ -53,6 +53,9 @@ export default async function AdminPage() {
           <span className="page-header-user">
             Signed in as <strong>{user.kickUsername}</strong>
           </span>
+          <Link className="button secondary" href="/admin/bingo">
+            Bingo Tiles
+          </Link>
           <Link className="button secondary" href="/">
             Back to Home
           </Link>

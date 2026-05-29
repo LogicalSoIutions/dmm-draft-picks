@@ -5,6 +5,7 @@ import {
   pickIdSet,
   type CaptainAssignments,
 } from "@/data/participants";
+import { bingoTierOrder, type BingoTier, type BingoTile } from "@/lib/bingo";
 import { getDb } from "@/server/db/index";
 
 export type OAuthTokenBundle = {
@@ -668,5 +669,282 @@ export const updateDraftOrder = (params: {
     return null;
   }
   return getDraftByPublicId(params.publicId);
+};
+
+export type BingoOptionsRecord = {
+  tiles: BingoTile[];
+  setByUserId: number;
+  updatedAt: string;
+};
+
+export type BingoCardRecord = {
+  ownerUserId: number;
+  layout: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BingoCardWithOwner = {
+  ownerUserId: number;
+  ownerKickUsername: string;
+  layout: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BingoProgressRecord = {
+  completedTileIds: string[];
+  updatedByUserId: number | null;
+  updatedAt: string;
+};
+
+type BingoOptionsRow = {
+  tiles_json: string;
+  set_by_user_id: number;
+  updated_at: string;
+};
+
+type BingoCardRow = {
+  owner_user_id: number;
+  layout_json: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type BingoCardWithOwnerRow = {
+  owner_user_id: number;
+  owner_kick_username: string;
+  layout_json: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type BingoProgressRow = {
+  completed_tile_ids_json: string;
+  updated_by_user_id: number | null;
+  updated_at: string;
+};
+
+const parseTiles = (tilesJson: string): BingoTile[] => {
+  const parsed = JSON.parse(tilesJson);
+  if (!Array.isArray(parsed)) {
+    throw new Error("Invalid bingo tiles payload in database");
+  }
+  const tiles: BingoTile[] = [];
+  for (const entry of parsed) {
+    if (
+      typeof entry !== "object" ||
+      entry === null ||
+      typeof (entry as Record<string, unknown>).id !== "string" ||
+      typeof (entry as Record<string, unknown>).label !== "string" ||
+      typeof (entry as Record<string, unknown>).tier !== "string"
+    ) {
+      throw new Error("Invalid bingo tiles payload in database");
+    }
+    const typed = entry as {
+      id: string;
+      label: string;
+      tier: string;
+      image?: unknown;
+    };
+    if (!bingoTierOrder.includes(typed.tier as BingoTier)) {
+      throw new Error("Invalid bingo tiles payload in database");
+    }
+    if (
+      typed.image !== undefined &&
+      typed.image !== null &&
+      typeof typed.image !== "string"
+    ) {
+      throw new Error("Invalid bingo tiles payload in database");
+    }
+    tiles.push({
+      id: typed.id,
+      label: typed.label,
+      tier: typed.tier as BingoTier,
+      ...(typeof typed.image === "string" && typed.image.length > 0
+        ? { image: typed.image }
+        : {}),
+    });
+  }
+  return tiles;
+};
+
+const parseLayout = (layoutJson: string): string[] => {
+  const parsed = JSON.parse(layoutJson);
+  if (!Array.isArray(parsed) || parsed.some((entry) => typeof entry !== "string")) {
+    throw new Error("Invalid bingo layout payload in database");
+  }
+  return parsed as string[];
+};
+
+export const getBingoOptions = (): BingoOptionsRecord | null => {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `
+        SELECT tiles_json, set_by_user_id, updated_at
+        FROM bingo_options
+        WHERE id = 1
+      `,
+    )
+    .get() as BingoOptionsRow | undefined;
+  if (!row) {
+    return null;
+  }
+  return {
+    tiles: parseTiles(row.tiles_json),
+    setByUserId: row.set_by_user_id,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const upsertBingoOptions = (params: {
+  tiles: BingoTile[];
+  setByUserId: number;
+}): BingoOptionsRecord => {
+  const db = getDb();
+  const tilesPayload = JSON.stringify(params.tiles);
+  db.prepare(
+    `
+      INSERT INTO bingo_options (id, tiles_json, set_by_user_id)
+      VALUES (1, ?, ?)
+      ON CONFLICT(id)
+      DO UPDATE SET
+        tiles_json = excluded.tiles_json,
+        set_by_user_id = excluded.set_by_user_id,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+  ).run(tilesPayload, params.setByUserId);
+  const record = getBingoOptions();
+  if (!record) {
+    throw new Error("Failed to load bingo options after upsert");
+  }
+  return record;
+};
+
+export const getBingoCardByOwnerUserId = (
+  ownerUserId: number,
+): BingoCardRecord | null => {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `
+        SELECT owner_user_id, layout_json, created_at, updated_at
+        FROM bingo_cards
+        WHERE owner_user_id = ?
+      `,
+    )
+    .get(ownerUserId) as BingoCardRow | undefined;
+  if (!row) {
+    return null;
+  }
+  return {
+    ownerUserId: row.owner_user_id,
+    layout: parseLayout(row.layout_json),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const upsertBingoCard = (params: {
+  ownerUserId: number;
+  layout: string[];
+}): BingoCardRecord => {
+  const db = getDb();
+  const layoutPayload = JSON.stringify(params.layout);
+  db.prepare(
+    `
+      INSERT INTO bingo_cards (owner_user_id, layout_json)
+      VALUES (?, ?)
+      ON CONFLICT(owner_user_id)
+      DO UPDATE SET
+        layout_json = excluded.layout_json,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+  ).run(params.ownerUserId, layoutPayload);
+  const record = getBingoCardByOwnerUserId(params.ownerUserId);
+  if (!record) {
+    throw new Error("Failed to load bingo card after upsert");
+  }
+  return record;
+};
+
+export const listAllBingoCardsWithOwner = (): BingoCardWithOwner[] => {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `
+        SELECT
+          c.owner_user_id,
+          u.kick_username AS owner_kick_username,
+          c.layout_json,
+          c.created_at,
+          c.updated_at
+        FROM bingo_cards c
+        INNER JOIN users u ON u.id = c.owner_user_id
+        ORDER BY c.updated_at ASC
+      `,
+    )
+    .all() as BingoCardWithOwnerRow[];
+  return rows.map((row) => ({
+    ownerUserId: row.owner_user_id,
+    ownerKickUsername: row.owner_kick_username,
+    layout: parseLayout(row.layout_json),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+};
+
+const parseCompletedTileIds = (completedTileIdsJson: string): string[] => {
+  const parsed = JSON.parse(completedTileIdsJson);
+  if (!Array.isArray(parsed) || parsed.some((entry) => typeof entry !== "string")) {
+    throw new Error("Invalid completed bingo tile payload in database");
+  }
+  return parsed as string[];
+};
+
+export const getBingoProgress = (): BingoProgressRecord | null => {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `
+        SELECT completed_tile_ids_json, updated_by_user_id, updated_at
+        FROM bingo_progress
+        WHERE id = 1
+      `,
+    )
+    .get() as BingoProgressRow | undefined;
+  if (!row) {
+    return null;
+  }
+  return {
+    completedTileIds: parseCompletedTileIds(row.completed_tile_ids_json),
+    updatedByUserId: row.updated_by_user_id,
+    updatedAt: row.updated_at,
+  };
+};
+
+export const upsertBingoProgress = (params: {
+  completedTileIds: string[];
+  updatedByUserId: number;
+}): BingoProgressRecord => {
+  const db = getDb();
+  const payload = JSON.stringify(params.completedTileIds);
+  db.prepare(
+    `
+      INSERT INTO bingo_progress (id, completed_tile_ids_json, updated_by_user_id)
+      VALUES (1, ?, ?)
+      ON CONFLICT(id)
+      DO UPDATE SET
+        completed_tile_ids_json = excluded.completed_tile_ids_json,
+        updated_by_user_id = excluded.updated_by_user_id,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+  ).run(payload, params.updatedByUserId);
+  const record = getBingoProgress();
+  if (!record) {
+    throw new Error("Failed to load bingo progress after upsert");
+  }
+  return record;
 };
 
