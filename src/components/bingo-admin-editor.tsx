@@ -12,16 +12,25 @@ import {
 
 type BingoAdminEditorProps = {
   initialTiles: BingoTile[];
+  initialUpdatedAt: string | null;
 };
 
-type TileDraft = { label: string; image: string };
+type TileDraft = { id: string; label: string; image: string };
 type TierDrafts = Record<BingoTier, TileDraft[]>;
+type SavedTile = { id: string; label: string; image: string; tier: BingoTier };
 
 type SaveState =
   | { kind: "idle"; message: string }
   | { kind: "saving"; message: string }
   | { kind: "error"; message: string }
   | { kind: "ok"; message: string };
+
+const createLocalTileId = (): string => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `tile-local-${crypto.randomUUID()}`;
+  }
+  return `tile-local-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
 
 const buildInitialTierDrafts = (initialTiles: BingoTile[]): TierDrafts => {
   const byTier: TierDrafts = {
@@ -36,6 +45,7 @@ const buildInitialTierDrafts = (initialTiles: BingoTile[]): TierDrafts => {
       continue;
     }
     byTier[tile.tier].push({
+      id: tile.id,
       label: tile.label,
       image: tile.image ?? "",
     });
@@ -43,20 +53,57 @@ const buildInitialTierDrafts = (initialTiles: BingoTile[]): TierDrafts => {
   for (const tier of bingoTierOrder) {
     const min = bingoTierPoolBounds[tier].min;
     while (byTier[tier].length < min) {
-      byTier[tier].push({ label: "", image: "" });
+      byTier[tier].push({ id: createLocalTileId(), label: "", image: "" });
     }
   }
   return byTier;
 };
 
-export function BingoAdminEditor({ initialTiles }: BingoAdminEditorProps) {
+const flattenLabeledDrafts = (draftsByTier: TierDrafts): SavedTile[] =>
+  bingoTierOrder.flatMap((tier) =>
+    draftsByTier[tier]
+      .map((draft) => ({
+        id: draft.id,
+        label: draft.label.trim(),
+        image: draft.image.trim(),
+        tier,
+      }))
+      .filter((draft) => draft.label.length > 0),
+  );
+
+const toSavedById = (tiles: SavedTile[]): Record<string, SavedTile> => {
+  const byId: Record<string, SavedTile> = {};
+  for (const tile of tiles) {
+    byId[tile.id] = tile;
+  }
+  return byId;
+};
+
+export function BingoAdminEditor({
+  initialTiles,
+  initialUpdatedAt,
+}: BingoAdminEditorProps) {
   const [draftsByTier, setDraftsByTier] = useState<TierDrafts>(() =>
     buildInitialTierDrafts(initialTiles),
+  );
+  const [savedTilesById, setSavedTilesById] = useState<Record<string, SavedTile>>(
+    () =>
+      toSavedById(
+        initialTiles.map((tile) => ({
+          id: tile.id,
+          label: tile.label,
+          image: tile.image ?? "",
+          tier: tile.tier,
+        })),
+      ),
   );
   const [saveState, setSaveState] = useState<SaveState>({
     kind: "idle",
     message: "",
   });
+  const [optionsUpdatedAt, setOptionsUpdatedAt] = useState<string | null>(
+    initialUpdatedAt,
+  );
 
   const updateDraft = (
     tier: BingoTier,
@@ -78,7 +125,10 @@ export function BingoAdminEditor({ initialTiles }: BingoAdminEditorProps) {
       }
       return {
         ...current,
-        [tier]: [...current[tier], { label: "", image: "" }],
+        [tier]: [
+          ...current[tier],
+          { id: createLocalTileId(), label: "", image: "" },
+        ],
       };
     });
   };
@@ -95,36 +145,81 @@ export function BingoAdminEditor({ initialTiles }: BingoAdminEditorProps) {
     });
   };
 
-  const allDrafts = bingoTierOrder.flatMap((tier) =>
-    draftsByTier[tier].map((draft) => ({ ...draft, tier })),
-  );
-  const labeledDrafts = allDrafts.filter((draft) => draft.label.trim().length > 0);
-
   const saveTiles = async () => {
+    const currentLabeledTiles = flattenLabeledDrafts(draftsByTier);
+    const currentById = toSavedById(currentLabeledTiles);
+    const currentKeys = Object.keys(currentById).sort();
+    const savedKeys = Object.keys(savedTilesById).sort();
+    const hasSameKeys =
+      currentKeys.length === savedKeys.length &&
+      currentKeys.every((key, index) => key === savedKeys[index]);
+    const hasChangedTiles =
+      !hasSameKeys ||
+      currentLabeledTiles.some((tile) => {
+        const previous = savedTilesById[tile.id];
+        return (
+          !previous ||
+          previous.label !== tile.label ||
+          previous.image !== tile.image ||
+          previous.tier !== tile.tier
+        );
+      });
+    if (!hasChangedTiles) {
+      setSaveState({ kind: "ok", message: "No changes to save" });
+      return;
+    }
     setSaveState({ kind: "saving", message: "Saving tiles..." });
     const response = await fetch("/api/admin/bingo/options", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        tiles: labeledDrafts.map((draft) => ({
-          label: draft.label.trim(),
-          tier: draft.tier,
-          image: draft.image.trim() || undefined,
+        tiles: currentLabeledTiles.map((tile) => ({
+          id: tile.id,
+          label: tile.label,
+          tier: tile.tier,
+          image: tile.image.length > 0 ? tile.image : undefined,
         })),
+        expectedUpdatedAt: optionsUpdatedAt,
       }),
     });
     const payload = (await response.json()) as {
       error?: string;
-      message?: string;
+      tiles?: BingoTile[] | null;
+      updatedAt?: string | null;
     };
     if (!response.ok) {
+      if (response.status === 409) {
+        setSaveState({
+          kind: "error",
+          message:
+            payload.error ??
+            "Another admin saved changes first. Refresh before saving again.",
+        });
+        return;
+      }
       setSaveState({
         kind: "error",
-        message: payload.error ?? "Failed to save tiles",
+        message: payload.error ?? "Failed to save bingo tiles",
       });
       return;
     }
-    setSaveState({ kind: "ok", message: payload.message ?? "Tiles saved" });
+    const latestTiles = Array.isArray(payload.tiles) ? payload.tiles : null;
+    const latestSaved = latestTiles
+      ? latestTiles.map((tile) => ({
+          id: tile.id,
+          label: tile.label,
+          image: tile.image ?? "",
+          tier: tile.tier,
+        }))
+      : currentLabeledTiles;
+    setSavedTilesById(toSavedById(latestSaved));
+    if (latestTiles) {
+      setDraftsByTier(buildInitialTierDrafts(latestTiles));
+    }
+    setOptionsUpdatedAt(
+      typeof payload.updatedAt === "string" ? payload.updatedAt : optionsUpdatedAt,
+    );
+    setSaveState({ kind: "ok", message: "Saved changes" });
   };
 
   return (
@@ -201,7 +296,7 @@ export function BingoAdminEditor({ initialTiles }: BingoAdminEditorProps) {
           onClick={saveTiles}
           disabled={saveState.kind === "saving"}
         >
-          Save Progress
+          Save Changes
         </button>
         <span
           className={`status ${saveState.kind === "error" ? "error" : saveState.kind === "ok" ? "ok" : ""}`}

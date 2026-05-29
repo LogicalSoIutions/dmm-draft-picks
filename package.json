@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "bingo:seed:test": "node scripts/bingo-seed-test.mjs",
+    "bingo:seed:test:max": "node scripts/bingo-seed-test.mjs --max",
+    "bingo:wipe": "node scripts/bingo-wipe.mjs"
   },
   "keywords": [],
   "author": "",

@@ -40,7 +40,7 @@ export const bingoTierPoolBounds: Record<
   BingoTier,
   { min: number; max: number }
 > = {
-  easy: { min: 8, max: 16 },
+  easy: { min: 8, max: 21 },
   medium: { min: 7, max: 14 },
   hard: { min: 5, max: 10 },
   insane: { min: 3, max: 6 },
@@ -83,6 +83,7 @@ export type BingoTile = {
 };
 
 export type BingoTileInput = {
+  id?: unknown;
   label?: unknown;
   tier?: unknown;
   image?: unknown;
@@ -174,11 +175,19 @@ export const validateTileOptions = (
     return { valid: false, message: "Provide at least one tile" };
   }
   const tiles: BingoTile[] = [];
+  const seenIds = new Set<string>();
   for (let index = 0; index < input.length; index += 1) {
     const entry = input[index] as BingoTileInput;
     if (typeof entry !== "object" || entry === null) {
       return { valid: false, message: `Tile ${index + 1} is invalid` };
     }
+    const providedId =
+      typeof entry.id === "string" ? entry.id.trim() : "";
+    const id = providedId || tileIdForIndex(index);
+    if (seenIds.has(id)) {
+      return { valid: false, message: `Duplicate tile id: ${id}` };
+    }
+    seenIds.add(id);
     const label = typeof entry.label === "string" ? entry.label.trim() : "";
     if (label.length === 0) {
       return { valid: false, message: `Tile ${index + 1} needs a label` };
@@ -210,7 +219,7 @@ export const validateTileOptions = (
       return { valid: false, message: `Tile ${index + 1} needs a valid tier` };
     }
     tiles.push({
-      id: tileIdForIndex(index),
+      id,
       label,
       tier,
       ...(image ? { image } : {}),

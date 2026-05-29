@@ -677,6 +677,10 @@ export type BingoOptionsRecord = {
   updatedAt: string;
 };
 
+export type UpsertBingoOptionsResult =
+  | { ok: true; record: BingoOptionsRecord }
+  | { ok: false; current: BingoOptionsRecord | null };
+
 export type BingoCardRecord = {
   ownerUserId: number;
   layout: string[];
@@ -820,6 +824,58 @@ export const upsertBingoOptions = (params: {
     throw new Error("Failed to load bingo options after upsert");
   }
   return record;
+};
+
+export const upsertBingoOptionsIfUnchanged = (params: {
+  tiles: BingoTile[];
+  setByUserId: number;
+  expectedUpdatedAt: string | null;
+}): UpsertBingoOptionsResult => {
+  const db = getDb();
+  const tilesPayload = JSON.stringify(params.tiles);
+  if (params.expectedUpdatedAt === null) {
+    const insert = db
+      .prepare(
+        `
+          INSERT INTO bingo_options (id, tiles_json, set_by_user_id, updated_at)
+          SELECT 1, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+          WHERE NOT EXISTS (
+            SELECT 1
+            FROM bingo_options
+            WHERE id = 1
+          )
+        `,
+      )
+      .run(tilesPayload, params.setByUserId);
+    if (insert.changes === 0) {
+      return { ok: false, current: getBingoOptions() };
+    }
+    const record = getBingoOptions();
+    if (!record) {
+      throw new Error("Failed to load bingo options after conditional insert");
+    }
+    return { ok: true, record };
+  }
+  const update = db
+    .prepare(
+      `
+        UPDATE bingo_options
+        SET
+          tiles_json = ?,
+          set_by_user_id = ?,
+          updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        WHERE id = 1 AND updated_at = ?
+      `,
+    )
+    .run(tilesPayload, params.setByUserId, params.expectedUpdatedAt);
+  if (update.changes === 0) {
+    return { ok: false, current: getBingoOptions() };
+  }
+  const record = getBingoOptions();
+  if (!record) {
+    throw new Error("Failed to load bingo options after conditional upsert");
+  }
+  return { ok: true, record };
 };
 
 export const getBingoCardByOwnerUserId = (

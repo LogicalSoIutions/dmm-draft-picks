@@ -83,7 +83,10 @@ export default async function AdminBingoPage() {
             picks into fixed tier slots (8 Easy, 7 Medium, 5 Hard, 3 Insane, 1
             Legendary).
           </p>
-          <BingoAdminEditor initialTiles={options?.tiles ?? []} />
+          <BingoAdminEditor
+            initialTiles={options?.tiles ?? []}
+            initialUpdatedAt={options?.updatedAt ?? null}
+          />
         </>
       ) : options ? (
         <BingoAdminProgress
