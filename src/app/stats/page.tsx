@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { DraftStats } from "@/components/draft-stats";
+import { getAuthenticatedUserFromServer } from "@/lib/auth";
 import {
   buildAllSlotAssignments,
   computeCaptainAffinity,
@@ -10,6 +11,7 @@ import {
   computeSummary,
   type OfficialMatchDraftInput,
 } from "@/lib/draft-stats";
+import { canViewOfficialDraftResults } from "@/lib/official-draft-visibility";
 import { buildSlotAssignments } from "@/lib/snake-draft";
 import {
   getOfficialDraft,
@@ -18,9 +20,13 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default function StatsPage() {
+export default async function StatsPage() {
+  const user = await getAuthenticatedUserFromServer();
+  const showOfficialResults = canViewOfficialDraftResults(
+    user?.kickUsername,
+  );
   const drafts = listAllDraftsWithOwner();
-  const officialDraft = getOfficialDraft();
+  const officialDraft = showOfficialResults ? getOfficialDraft() : null;
 
   const draftInputs = drafts.map((draft) => ({
     picksOrder: draft.picksOrder,

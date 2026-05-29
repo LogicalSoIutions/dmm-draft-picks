@@ -28,6 +28,7 @@ const commonSchema = z.object({
     .string()
     .default("2026-05-31T19:00:00+01:00"),
   ADMIN_KICK_USERNAMES: z.string().optional().default(""),
+  TESTING_WINNER: z.string().optional().default("false"),
 });
 
 type CommonEnv = z.infer<typeof commonSchema>;
