@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BingoBoard, useBingoBoard } from "@/components/bingo-board";
@@ -22,6 +23,7 @@ export function BingoEditor({
   initialLayout,
   hasExistingCard,
 }: BingoEditorProps) {
+  const router = useRouter();
   const controller = useBingoBoard(tiles, initialLayout);
   const [saveState, setSaveState] = useState<SaveState>({
     kind: "idle",
@@ -56,6 +58,7 @@ export function BingoEditor({
     }
     setSavedOnce(true);
     setSaveState({ kind: "ok", message: payload.message ?? "Card saved" });
+    router.refresh();
   };
 
   const autoFillCard = async () => {
@@ -65,46 +68,53 @@ export function BingoEditor({
 
   return (
     <div className="grid" style={{ gap: 16 }}>
-      <BingoBoard tiles={tiles} controller={controller} />
-      <div className="row">
-        <button
-          className={`button secondary autofill-button${
-            controller.isAutoFilling ? " is-running" : ""
-          }`}
-          type="button"
-          onClick={autoFillCard}
-          disabled={controller.isAutoFilling || controller.allPlaced}
-          title={
-            controller.allPlaced
-              ? "Your board is already full"
-              : "Randomly fill remaining slots"
-          }
-        >
-          {controller.isAutoFilling ? "Rolling..." : "Do my board for me"}
-        </button>
-        <button
-          className="button"
-          type="button"
-          onClick={saveCard}
-          disabled={
-            saveState.kind === "saving" ||
-            controller.isAutoFilling ||
-            !controller.allPlaced
-          }
-          title={
-            !controller.allPlaced
-              ? `Place all ${controller.tileCount} tiles before saving`
-              : undefined
-          }
-        >
-          {savedOnce ? "Update Card" : "Save Card"}
-        </button>
-        <span
-          className={`status ${saveState.kind === "error" ? "error" : saveState.kind === "ok" ? "ok" : ""}`}
-        >
-          {saveState.message}
-        </span>
-      </div>
+      <BingoBoard
+        tiles={tiles}
+        controller={controller}
+        headerLeft={
+          <button
+            className={`button secondary autofill-button${
+              controller.isAutoFilling ? " is-running" : ""
+            }`}
+            type="button"
+            onClick={autoFillCard}
+            disabled={controller.isAutoFilling}
+            title={
+              controller.allPlaced
+                ? "Randomly roll the entire board"
+                : "Randomly fill remaining slots"
+            }
+          >
+            {controller.isAutoFilling ? "Rolling..." : "Do my board for me"}
+          </button>
+        }
+        headerRight={
+          <>
+            <span
+              className={`status ${saveState.kind === "error" ? "error" : saveState.kind === "ok" ? "ok" : ""}`}
+            >
+              {saveState.message}
+            </span>
+            <button
+              className="button"
+              type="button"
+              onClick={saveCard}
+              disabled={
+                saveState.kind === "saving" ||
+                controller.isAutoFilling ||
+                !controller.allPlaced
+              }
+              title={
+                !controller.allPlaced
+                  ? `Place all ${controller.tileCount} tiles before saving`
+                  : undefined
+              }
+            >
+              {savedOnce ? "Update Card" : "Save Card"}
+            </button>
+          </>
+        }
+      />
     </div>
   );
 }

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-import { formatEasternDateTime } from "@/lib/format-date";
+import { BingoCarousel } from "@/components/bingo-carousel";
 import { getBingoOptions, listAllBingoCardsWithOwner } from "@/server/db/queries";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "DMM Bingo Boards",
+  description: "Browse all submitted DMM bingo boards.",
+};
 
 export default async function BingoBoardsPage() {
   const options = getBingoOptions();
@@ -31,37 +36,16 @@ export default async function BingoBoardsPage() {
       </p>
       {!options ? (
         <p className="status">Bingo tiles are not set yet. Boards will appear here soon.</p>
-      ) : cards.length === 0 ? (
-        <div className="card">
-          <p>No bingo boards have been submitted yet.</p>
-        </div>
       ) : (
-        <div className="card">
-          <h2>Submitted Boards</h2>
-          <p>{cards.length} total submissions.</p>
-          <div className="grid" style={{ gap: 10 }}>
-            {cards.map((card) => (
-              <div
-                key={card.ownerUserId}
-                className="row"
-                style={{ justifyContent: "space-between", alignItems: "center" }}
-              >
-                <div>
-                  <strong>{card.ownerKickUsername}</strong>
-                  <div className="status">
-                    Updated {formatEasternDateTime(card.updatedAt)}
-                  </div>
-                </div>
-                <Link
-                  className="button secondary"
-                  href={`/bingo/boards/${card.ownerUserId}`}
-                >
-                  View Board
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
+        <BingoCarousel
+          cards={cards.map((card) => ({
+            ownerUserId: card.ownerUserId,
+            ownerKickUsername: card.ownerKickUsername,
+            layout: card.layout,
+            updatedAt: card.updatedAt,
+          }))}
+          tiles={options.tiles}
+        />
       )}
     </main>
   );

@@ -40,11 +40,11 @@ export const bingoTierPoolBounds: Record<
   BingoTier,
   { min: number; max: number }
 > = {
-  easy: { min: 8, max: 21 },
+  easy: { min: 8, max: 17 },
   medium: { min: 7, max: 14 },
   hard: { min: 5, max: 10 },
-  insane: { min: 3, max: 6 },
-  legendary: { min: 1, max: 2 },
+  insane: { min: 3, max: 8 },
+  legendary: { min: 1, max: 6 },
 };
 
 const tierTemplateByCellIndex: Array<BingoTier | "free"> = [

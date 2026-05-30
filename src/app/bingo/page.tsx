@@ -21,10 +21,14 @@ export const metadata: Metadata = {
 const PageShell = ({
   title,
   signedInUsername,
+  userId,
+  hasCard,
   children,
 }: {
   title: string;
   signedInUsername?: string;
+  userId?: number;
+  hasCard?: boolean;
   children: React.ReactNode;
 }) => (
   <main>
@@ -37,6 +41,11 @@ const PageShell = ({
           <span className="page-header-user">
             Signed in as <strong>{signedInUsername}</strong>
           </span>
+        ) : null}
+        {hasCard && userId ? (
+          <Link className="button secondary" href={`/bingo/boards/${userId}`}>
+            My Board
+          </Link>
         ) : null}
         <Link className="button secondary" href="/bingo/boards">
           Browse Boards
@@ -87,7 +96,12 @@ export default async function BingoPage() {
 
   if (!open) {
     return (
-      <PageShell title="Bingo — Locked" signedInUsername={user.kickUsername}>
+      <PageShell
+        title="Bingo — Locked"
+        signedInUsername={user.kickUsername}
+        userId={user.userId}
+        hasCard={Boolean(card)}
+      >
         <aside className="prize-banner bingo-deadline-banner" role="note">
           <div className="prize-banner-title">Bingo Deadline</div>
           <DeadlineCountdown
@@ -113,6 +127,8 @@ export default async function BingoPage() {
     <PageShell
       title={card ? "Edit Your Bingo Card" : "Build Your Bingo Card"}
       signedInUsername={user.kickUsername}
+      userId={user.userId}
+      hasCard={Boolean(card)}
     >
       <p className="bingo-tier-balance-text">
         Build a tier-balanced card: 8 Easy, 7 Medium, 5 Hard, 3 Insane, 1

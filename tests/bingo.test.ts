@@ -16,6 +16,8 @@ import {
   validateTileOptions,
   type BingoTile,
 } from "@/lib/bingo";
+import { getAutofillPicksForTier } from "@/components/bingo-board";
+
 
 const makeTieredInputs = (counts: Record<BingoTier, number>) => {
   const result: Array<{ label: string; tier: BingoTier }> = [];
@@ -141,7 +143,7 @@ describe("validateTileOptions", () => {
         medium: 7,
         hard: 5,
         insane: 3,
-        legendary: 3,
+        legendary: 7,
       }),
     );
     expect(result.valid).toBe(false);
@@ -312,4 +314,64 @@ describe("hasBingo", () => {
     expect(hasBingo(layout, completed)).toBe(false);
   });
 });
+
+describe("getAutofillPicksForTier", () => {
+  const restrictedIds = new Set([
+    "tile-12", "tile-13", "tile-14", "tile-15", "tile-16", "tile-17"
+  ]);
+  const noopShuffle = <T,>(input: T[]): T[] => [...input];
+
+  it("limits restricted tiles to at most 1 if none are placed", () => {
+    const availableTiles = [
+      "tile-1", "tile-2", "tile-3", "tile-12", "tile-13", "tile-14"
+    ];
+    const picks = getAutofillPicksForTier(
+      "easy",
+      availableTiles,
+      4,
+      0,
+      restrictedIds,
+      noopShuffle,
+    );
+
+    const pickedRestricted = picks.filter((id) => restrictedIds.has(id));
+    expect(pickedRestricted.length).toBeLessThanOrEqual(1);
+    expect(picks.length).toBe(4);
+  });
+
+  it("allows 0 restricted tiles if one is already manually placed", () => {
+    const availableTiles = [
+      "tile-1", "tile-2", "tile-3", "tile-12", "tile-13", "tile-14"
+    ];
+    const picks = getAutofillPicksForTier(
+      "easy",
+      availableTiles,
+      4,
+      1,
+      restrictedIds,
+      noopShuffle,
+    );
+
+    const pickedRestricted = picks.filter((id) => restrictedIds.has(id));
+    expect(pickedRestricted.length).toBe(0);
+    expect(picks.length).toBe(3);
+    expect(picks).toEqual(["tile-1", "tile-2", "tile-3"]);
+  });
+
+  it("does not restrict non-easy tiers", () => {
+    const availableTiles = [
+      "tile-1", "tile-2", "tile-3", "tile-12", "tile-13", "tile-14"
+    ];
+    const picks = getAutofillPicksForTier(
+      "medium",
+      availableTiles,
+      4,
+      0,
+      restrictedIds,
+      noopShuffle,
+    );
+    expect(picks).toEqual(["tile-1", "tile-2", "tile-3", "tile-12"]);
+  });
+});
+
 
