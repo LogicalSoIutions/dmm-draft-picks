@@ -236,6 +236,22 @@ describe("validateCardLayout", () => {
     const result = validateCardLayout(layout, tiles);
     expect(result.valid).toBe(false);
   });
+
+  it("accepts a completely empty layout", () => {
+    const tiles = validatedTiles();
+    const layout = Array.from({ length: BINGO_TILE_COUNT }, () => "");
+    const result = validateCardLayout(layout, tiles);
+    expect(result.valid).toBe(true);
+  });
+
+  it("accepts a partially filled layout", () => {
+    const tiles = validatedTiles();
+    const layout = Array.from({ length: BINGO_TILE_COUNT }, () => "");
+    const easyTile = tiles.find((t) => t.tier === "easy")!;
+    layout[3] = easyTile.id;
+    const result = validateCardLayout(layout, tiles);
+    expect(result.valid).toBe(true);
+  });
 });
 
 describe("validateCompletedTileIds", () => {

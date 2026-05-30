@@ -32,13 +32,6 @@ export function BingoEditor({
   const [savedOnce, setSavedOnce] = useState<boolean>(hasExistingCard);
 
   const saveCard = async () => {
-    if (!controller.layout) {
-      setSaveState({
-        kind: "error",
-        message: `Place all ${controller.tileCount} tiles before saving.`,
-      });
-      return;
-    }
     setSaveState({ kind: "saving", message: "Saving card..." });
     const response = await fetch("/api/bingo", {
       method: "POST",
@@ -66,6 +59,11 @@ export function BingoEditor({
     await controller.autoFillRandomly();
   };
 
+  const clearCard = () => {
+    setSaveState({ kind: "idle", message: "" });
+    controller.clearBoard();
+  };
+
   return (
     <div className="grid" style={{ gap: 16 }}>
       <BingoBoard
@@ -89,30 +87,39 @@ export function BingoEditor({
           </button>
         }
         headerRight={
-          <>
+          <div className="bingo-editor-actions">
             <span
               className={`status ${saveState.kind === "error" ? "error" : saveState.kind === "ok" ? "ok" : ""}`}
             >
               {saveState.message}
             </span>
-            <button
-              className="button"
-              type="button"
-              onClick={saveCard}
-              disabled={
-                saveState.kind === "saving" ||
-                controller.isAutoFilling ||
-                !controller.allPlaced
-              }
-              title={
-                !controller.allPlaced
-                  ? `Place all ${controller.tileCount} tiles before saving`
-                  : undefined
-              }
-            >
-              {savedOnce ? "Update Card" : "Save Card"}
-            </button>
-          </>
+            <div className="bingo-editor-buttons">
+              <button
+                className="button"
+                type="button"
+                onClick={saveCard}
+                disabled={
+                  saveState.kind === "saving" ||
+                  controller.isAutoFilling
+                }
+                title="Save your current board layout"
+              >
+                {savedOnce ? "Update Card" : "Save Card"}
+              </button>
+              <button
+                className="button secondary"
+                type="button"
+                onClick={clearCard}
+                disabled={
+                  saveState.kind === "saving" ||
+                  controller.isAutoFilling
+                }
+                title="Remove all tiles from the board"
+              >
+                Clear Board
+              </button>
+            </div>
+          </div>
         }
       />
     </div>

@@ -251,15 +251,17 @@ export const validateCardLayout = (
   if (layout.length !== BINGO_TILE_COUNT) {
     return {
       valid: false,
-      message: `Place all ${BINGO_TILE_COUNT} tiles before saving`,
+      message: `Layout must have exactly ${BINGO_TILE_COUNT} entries`,
     };
   }
   const tilesById = new Map(tiles.map((tile) => [tile.id, tile]));
   const seen = new Set<string>();
-  const selectedTierCounts = makeTierCountMap();
   for (const entry of layout) {
     if (typeof entry !== "string") {
       return { valid: false, message: "Layout entries must be strings" };
+    }
+    if (entry === "") {
+      continue;
     }
     const tile = tilesById.get(entry);
     if (!tile) {
@@ -269,10 +271,12 @@ export const validateCardLayout = (
       return { valid: false, message: "A tile was placed more than once" };
     }
     seen.add(entry);
-    selectedTierCounts[tile.tier] += 1;
   }
   for (let layoutIndex = 0; layoutIndex < layout.length; layoutIndex += 1) {
     const tileId = layout[layoutIndex];
+    if (tileId === "") {
+      continue;
+    }
     const tile = tilesById.get(tileId);
     if (!tile) {
       return { valid: false, message: `Unknown tile id: ${tileId}` };
@@ -282,15 +286,6 @@ export const validateCardLayout = (
       return {
         valid: false,
         message: `Slot ${layoutIndex + 1} requires ${bingoTierLabels[requiredTier]}`,
-      };
-    }
-  }
-  for (const tier of bingoTierOrder) {
-    const expected = bingoTierRequiredCounts[tier];
-    if (selectedTierCounts[tier] !== expected) {
-      return {
-        valid: false,
-        message: `Board must include exactly ${expected} ${bingoTierLabels[tier]} picks`,
       };
     }
   }

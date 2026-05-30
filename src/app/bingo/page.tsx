@@ -132,7 +132,8 @@ export default async function BingoPage() {
     >
       <p className="bingo-tier-balance-text">
         Build a tier-balanced card: 8 Easy, 7 Medium, 5 Hard, 3 Insane, 1
-        Legendary (plus FREE center).
+        Legendary (plus FREE center). The way to win is by getting ANY 5 slots in a
+        row, with the free middle slot counting.
       </p>
       <aside className="prize-banner bingo-deadline-banner" role="note">
         <div className="prize-banner-title">Bingo Deadline</div>

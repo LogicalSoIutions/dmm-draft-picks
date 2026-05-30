@@ -136,7 +136,7 @@ export type BingoBoardController = {
   filledCount: number;
   tileCount: number;
   allPlaced: boolean;
-  layout: string[] | null;
+  layout: string[];
   cellAssignments: (string | null)[];
   poolByTier: BingoPoolByTier;
   selectedTierCounts: Record<BingoTier, number>;
@@ -144,6 +144,7 @@ export type BingoBoardController = {
   isAutoFilling: boolean;
   activeTileId: string | null;
   autoFillRandomly: () => Promise<void>;
+  clearBoard: () => void;
   onDragStart: (event: DragStartEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;
   onDragCancel: () => void;
@@ -163,6 +164,10 @@ const buildInitialCells = (
     let valid = true;
     for (let index = 0; index < BINGO_TILE_COUNT; index += 1) {
       const tileId = initialLayout[index];
+      if (tileId === "") {
+        cells[index] = null;
+        continue;
+      }
       const tile = tileById.get(tileId);
       if (!tile || seen.has(tileId)) {
         valid = false;
@@ -183,20 +188,6 @@ const buildInitialCells = (
   return cells;
 };
 
-const buildInitialPoolByTier = (
-  tiles: BingoTile[],
-  cells: (string | null)[],
-): BingoPoolByTier => {
-  const poolByTier = makeEmptyPoolByTier();
-  const assignedIds = new Set(cells.filter((value): value is string => value !== null));
-  for (const tile of tiles) {
-    if (!assignedIds.has(tile.id)) {
-      poolByTier[tile.tier].push(tile.id);
-    }
-  }
-  return poolByTier;
-};
-
 export function useBingoBoard(
   tiles: BingoTile[],
   initialLayout: string[],
@@ -212,9 +203,13 @@ export function useBingoBoard(
   const [cellAssignments, setCellAssignments] = useState<(string | null)[]>(
     () => buildInitialCells(tiles, initialLayout),
   );
-  const [poolByTier, setPoolByTier] = useState<BingoPoolByTier>(() =>
-    buildInitialPoolByTier(tiles, buildInitialCells(tiles, initialLayout)),
-  );
+  const poolByTier = useMemo<BingoPoolByTier>(() => {
+    const pool = makeEmptyPoolByTier();
+    for (const tile of tiles) {
+      pool[tile.tier].push(tile.id);
+    }
+    return pool;
+  }, [tiles]);
   const [autoFillPulseCellIndices, setAutoFillPulseCellIndices] = useState<
     number[]
   >([]);
@@ -282,12 +277,6 @@ export function useBingoBoard(
     const sourceCellIndex = cellAssignments.findIndex((value) => value === activeId);
     const sourceFromPool = sourceCellIndex < 0;
     const activeTier = activeTile.tier;
-    if (
-      sourceFromPool &&
-      !poolByTier[activeTier].includes(activeId)
-    ) {
-      return;
-    }
 
     if (overPoolTier) {
       if (overPoolTier !== activeTier) {
@@ -299,15 +288,6 @@ export function useBingoBoard(
       const nextCells = [...cellAssignments];
       nextCells[sourceCellIndex] = null;
       setCellAssignments(nextCells);
-      setPoolByTier((current) => {
-        if (current[activeTier].includes(activeId)) {
-          return current;
-        }
-        return {
-          ...current,
-          [activeTier]: [...current[activeTier], activeId],
-        };
-      });
       return;
     }
 
@@ -338,23 +318,6 @@ export function useBingoBoard(
       return;
     }
     setCellAssignments(nextCells);
-    setPoolByTier((current) => {
-      const next: BingoPoolByTier = {
-        easy: [...current.easy],
-        medium: [...current.medium],
-        hard: [...current.hard],
-        insane: [...current.insane],
-        legendary: [...current.legendary],
-      };
-      next[activeTier] = next[activeTier].filter((tileId) => tileId !== activeId);
-      if (occupant) {
-        const occupantTier = tilesById.get(occupant)?.tier;
-        if (occupantTier) {
-          next[occupantTier] = [...next[occupantTier], occupant];
-        }
-      }
-      return next;
-    });
   };
 
   const autoFillRandomly = async () => {
@@ -363,24 +326,20 @@ export function useBingoBoard(
     }
 
     let currentCells = [...cellAssignments];
-    let currentPool = {
-      easy: [...poolByTier.easy],
-      medium: [...poolByTier.medium],
-      hard: [...poolByTier.hard],
-      insane: [...poolByTier.insane],
-      legendary: [...poolByTier.legendary],
-    };
-
     const isFull = currentCells.filter((c) => c !== null).length === BINGO_TILE_COUNT;
     if (isFull) {
       currentCells = Array.from({ length: BINGO_TILE_COUNT }, () => null);
-      currentPool = makeEmptyPoolByTier();
-      for (const tile of tiles) {
-        currentPool[tile.tier].push(tile.id);
-      }
       setCellAssignments(currentCells);
-      setPoolByTier(currentPool);
     }
+
+    const assignedIds = new Set(currentCells.filter((value): value is string => value !== null));
+    const currentPool: BingoPoolByTier = {
+      easy: poolByTier.easy.filter((id) => !assignedIds.has(id)),
+      medium: poolByTier.medium.filter((id) => !assignedIds.has(id)),
+      hard: poolByTier.hard.filter((id) => !assignedIds.has(id)),
+      insane: poolByTier.insane.filter((id) => !assignedIds.has(id)),
+      legendary: poolByTier.legendary.filter((id) => !assignedIds.has(id)),
+    };
 
     const easyTiles = tiles.filter((t) => t.tier === "easy");
     const restrictedIds = new Set(easyTiles.slice(11, 17).map((t) => t.id));
@@ -421,13 +380,6 @@ export function useBingoBoard(
     }
     const orderedSteps = shuffle(pendingSteps);
     let nextCells = [...currentCells];
-    let nextPoolByTier: BingoPoolByTier = {
-      easy: [...currentPool.easy],
-      medium: [...currentPool.medium],
-      hard: [...currentPool.hard],
-      insane: [...currentPool.insane],
-      legendary: [...currentPool.legendary],
-    };
     setIsAutoFilling(true);
     setActiveTileId(null);
     setAutoFillPulseCellIndices([]);
@@ -436,24 +388,8 @@ export function useBingoBoard(
         if (nextCells[step.cellIndex] !== null) {
           continue;
         }
-        if (!nextPoolByTier[step.tier].includes(step.tileId)) {
-          continue;
-        }
-        nextPoolByTier = {
-          ...nextPoolByTier,
-          [step.tier]: nextPoolByTier[step.tier].filter(
-            (tileId) => tileId !== step.tileId,
-          ),
-        };
         nextCells[step.cellIndex] = step.tileId;
         setCellAssignments([...nextCells]);
-        setPoolByTier({
-          easy: [...nextPoolByTier.easy],
-          medium: [...nextPoolByTier.medium],
-          hard: [...nextPoolByTier.hard],
-          insane: [...nextPoolByTier.insane],
-          legendary: [...nextPoolByTier.legendary],
-        });
         setAutoFillPulseCellIndices((current) =>
           current.includes(step.cellIndex)
             ? current
@@ -470,20 +406,18 @@ export function useBingoBoard(
     }
   };
 
-  const layout = useMemo<string[] | null>(() => {
-    if (!allPlaced) {
-      return null;
-    }
+  const clearBoard = () => {
+    setCellAssignments(Array.from({ length: BINGO_TILE_COUNT }, () => null));
+  };
+
+  const layout = useMemo<string[]>(() => {
     const result: string[] = [];
     for (let index = 0; index < BINGO_TILE_COUNT; index += 1) {
       const tileId = cellAssignments[index];
-      if (!tileId) {
-        return null;
-      }
-      result.push(tileId);
+      result.push(tileId || "");
     }
     return result;
-  }, [cellAssignments, allPlaced]);
+  }, [cellAssignments]);
 
   return {
     filledCount,
@@ -497,6 +431,7 @@ export function useBingoBoard(
     isAutoFilling,
     activeTileId,
     autoFillRandomly,
+    clearBoard,
     onDragStart,
     onDragEnd,
     onDragCancel,
@@ -505,13 +440,19 @@ export function useBingoBoard(
 
 type BingoTileCardProps = {
   tile: BingoTile;
-  variant?: "default" | "overlay";
+  variant?: "default" | "overlay" | "placed";
 };
 
 function BingoTileCard({ tile, variant = "default" }: BingoTileCardProps) {
   return (
     <div
-      className={`bingo-tile tier-${tile.tier}${variant === "overlay" ? " bingo-tile-overlay" : ""}`}
+      className={`bingo-tile tier-${tile.tier}${
+        variant === "overlay"
+          ? " bingo-tile-overlay"
+          : variant === "placed"
+            ? " bingo-tile-placed"
+            : ""
+      }`}
     >
       <span className="bingo-tile-label">{tile.label}</span>
     </div>
@@ -521,9 +462,11 @@ function BingoTileCard({ tile, variant = "default" }: BingoTileCardProps) {
 function DraggableTile({
   tile,
   disabled,
+  isPlaced,
 }: {
   tile: BingoTile;
   disabled?: boolean;
+  isPlaced?: boolean;
 }) {
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: tile.id,
@@ -532,13 +475,13 @@ function DraggableTile({
   return (
     <div
       ref={setNodeRef}
-      className="bingo-tile-draggable"
+      className={`bingo-tile-draggable${isPlaced ? " is-placed" : ""}`}
       style={{ opacity: isDragging ? 0 : 1 }}
       aria-label={`Drag ${tile.label}`}
       {...attributes}
       {...listeners}
     >
-      <BingoTileCard tile={tile} />
+      <BingoTileCard tile={tile} variant={isPlaced ? "placed" : "default"} />
     </div>
   );
 }
@@ -599,11 +542,13 @@ function SidePool({
   tier,
   selectedCount,
   tiles,
+  placedTileIds,
   dragDisabled,
 }: {
   tier: BingoTier;
   selectedCount: number;
   tiles: BingoTile[];
+  placedTileIds: Set<string>;
   dragDisabled: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: tierPoolDropId(tier) });
@@ -623,9 +568,17 @@ function SidePool({
         {tiles.length === 0 ? (
           <p className="bingo-tier-empty">None left</p>
         ) : (
-          tiles.map((tile) => (
-            <DraggableTile key={tile.id} tile={tile} disabled={dragDisabled} />
-          ))
+          tiles.map((tile) => {
+            const isPlaced = placedTileIds.has(tile.id);
+            return (
+              <DraggableTile
+                key={tile.id}
+                tile={tile}
+                disabled={dragDisabled || isPlaced}
+                isPlaced={isPlaced}
+              />
+            );
+          })
         )}
       </div>
     </section>
@@ -675,6 +628,12 @@ export function BingoBoard({
     : null;
   const activeTileTier = activeTile?.tier ?? null;
 
+  const placedTileIds = useMemo(() => {
+    return new Set(
+      controller.cellAssignments.filter((id): id is string => id !== null),
+    );
+  }, [controller.cellAssignments]);
+
   return (
     <DndContext
       sensors={sensors}
@@ -688,13 +647,30 @@ export function BingoBoard({
           <div className="bingo-card-header-left">
             {headerLeft}
           </div>
-          <h2 className="bingo-card-title">Your Bingo Card</h2>
+          <h2 className="bingo-card-title">
+            Your Bingo Card
+            <span className="info-tooltip-trigger" tabIndex={0}>
+              <span className="info-tooltip-icon">i</span>
+              <span className="info-tooltip-content">
+                <strong>How to use the board:</strong>
+                <ul>
+                  <li>Drag tiles from the pools at the bottom into matching grid slots.</li>
+                  <li>Drag tiles around the grid to swap or rearrange them.</li>
+                  <li>Drag a tile back to its pool at the bottom to remove it from the grid.</li>
+                  <li>Use &ldquo;Do my board for me&rdquo; to auto-fill empty slots randomly.</li>
+                  <li>Click &ldquo;Save Card&rdquo; to save your current board (even if empty).</li>
+                </ul>
+              </span>
+            </span>
+          </h2>
           <div className="bingo-card-header-right">
             {headerRight}
           </div>
         </div>
         <p className="bingo-card-subtitle">
           Drag each tile into a slot that matches its tier. Center is FREE.
+          The way to win is by getting ANY 5 slots in a row, with the free middle
+          slot counting.
           {` ${controller.filledCount} / ${controller.tileCount} `}tiles placed.
         </p>
         <div className="bingo-grid">
@@ -729,6 +705,7 @@ export function BingoBoard({
               tier={tier}
               selectedCount={controller.selectedTierCounts[tier]}
               tiles={laneTilesByTier[tier]}
+              placedTileIds={placedTileIds}
               dragDisabled={controller.isAutoFilling}
             />
           ))}

@@ -1909,3 +1909,147 @@ p {
     justify-content: flex-end;
   }
 }
+
+/* Placed Bingo Tiles in pools */
+.bingo-tile-placed {
+  opacity: 0.35;
+  filter: grayscale(85%) contrast(85%);
+  cursor: not-allowed !important;
+}
+
+/* Bingo Editor Buttons */
+.bingo-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.bingo-editor-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  min-width: 140px;
+}
+
+.bingo-editor-buttons .button {
+  width: 100%;
+}
+
+/* Info Tooltip */
+.info-tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--osrs-panel-light);
+  border: 2px solid var(--osrs-border);
+  color: var(--osrs-gold);
+  cursor: help;
+  vertical-align: middle;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  text-shadow: none !important;
+  box-shadow: 1px 1px 0 #000;
+}
+
+.info-tooltip-trigger:hover,
+.info-tooltip-trigger:focus-within {
+  background: var(--osrs-gold);
+  color: var(--osrs-panel-dark);
+  border-color: var(--osrs-gold-bright);
+}
+
+.info-tooltip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: none;
+  line-height: 1;
+  text-shadow: none !important;
+  margin-top: -1px;
+}
+
+.info-tooltip-content {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, var(--osrs-panel) 0%, var(--osrs-panel-dark) 100%);
+  border: 2px solid var(--osrs-border);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 215, 110, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.85);
+  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--osrs-font), sans-serif;
+  text-align: left;
+  white-space: normal;
+  text-transform: none;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--osrs-text);
+  text-shadow: var(--osrs-shadow-1);
+}
+
+.info-tooltip-content::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-bottom-color: var(--osrs-border);
+}
+
+.info-tooltip-trigger:hover .info-tooltip-content,
+.info-tooltip-trigger:focus-within .info-tooltip-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.info-tooltip-content strong {
+  color: var(--osrs-gold-bright);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--osrs-rule);
+  padding-bottom: 4px;
+  display: block;
+}
+
+.info-tooltip-content ul {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-tooltip-content li {
+  margin: 0;
+  list-style-type: disc;
+}
+
