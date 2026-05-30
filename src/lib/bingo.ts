@@ -48,49 +48,46 @@ export const bingoTierPoolBounds: Record<
 };
 
 const tierTemplateByCellIndex: Array<BingoTier | "free"> = [
-  "easy",
+  "hard",
   "medium",
-  "easy",
   "hard",
   "easy",
-  "medium",
   "hard",
   "medium",
   "insane",
-  "medium",
   "easy",
   "hard",
+  "medium",
+  "medium",
+  "easy",
   "free",
-  "hard",
+  "insane",
   "easy",
   "medium",
+  "easy",
   "insane",
   "medium",
+  "easy",
+  "hard",
+  "medium",
+  "easy",
+  "easy",
   "legendary",
-  "medium",
-  "easy",
-  "hard",
-  "easy",
-  "insane",
-  "easy",
 ];
 
 export type BingoTile = {
   id: string;
   label: string;
   tier: BingoTier;
-  image?: string;
 };
 
 export type BingoTileInput = {
   id?: unknown;
   label?: unknown;
   tier?: unknown;
-  image?: unknown;
 };
 
 const MAX_LABEL_LENGTH = 80;
-const MAX_IMAGE_LENGTH = 300;
 
 export const tileIdForIndex = (index: number): string => `tile-${index + 1}`;
 
@@ -198,22 +195,6 @@ export const validateTileOptions = (
         message: `Tile ${index + 1} label is too long (max ${MAX_LABEL_LENGTH} characters)`,
       };
     }
-    let image: string | undefined;
-    if (entry.image !== undefined && entry.image !== null && entry.image !== "") {
-      if (typeof entry.image !== "string") {
-        return { valid: false, message: `Tile ${index + 1} image must be text` };
-      }
-      const trimmed = entry.image.trim();
-      if (trimmed.length > MAX_IMAGE_LENGTH) {
-        return {
-          valid: false,
-          message: `Tile ${index + 1} image reference is too long`,
-        };
-      }
-      if (trimmed.length > 0) {
-        image = trimmed;
-      }
-    }
     const tier = parseTier(entry.tier);
     if (!tier) {
       return { valid: false, message: `Tile ${index + 1} needs a valid tier` };
@@ -222,7 +203,6 @@ export const validateTileOptions = (
       id,
       label,
       tier,
-      ...(image ? { image } : {}),
     });
   }
   const tierCounts = countTiers(tiles);
@@ -364,14 +344,3 @@ export const hasBingo = (layout: string[], completedTileIds: ReadonlySet<string>
   return false;
 };
 
-/**
- * Resolve a stored image reference to a URL the client can load. Absolute URLs
- * and root-relative paths are used as-is; bare filenames are served from the
- * existing `/api/images/[file]` endpoint.
- */
-export const resolveBingoTileImage = (image: string): string => {
-  if (/^(https?:)?\/\//i.test(image) || image.startsWith("/")) {
-    return image;
-  }
-  return `/api/images/${encodeURIComponent(image)}`;
-};

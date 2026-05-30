@@ -137,7 +137,6 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       id?: unknown;
       label?: unknown;
       tier?: unknown;
-      image?: unknown;
     };
     if (typeof typedTile.id !== "string" || typedTile.id.trim().length === 0) {
       return NextResponse.json({ error: "tile.id is required" }, { status: 400 });
@@ -162,10 +161,6 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       id: typedTile.id.trim(),
       label: typedTile.label.trim(),
       tier: normalizedTier,
-      image:
-        typeof typedTile.image === "string" && typedTile.image.trim().length > 0
-          ? typedTile.image.trim()
-          : undefined,
     };
     const existingIndex = nextTiles.findIndex(
       (entry) => entry.id === normalizedTile.id,

@@ -749,25 +749,14 @@ const parseTiles = (tilesJson: string): BingoTile[] => {
       id: string;
       label: string;
       tier: string;
-      image?: unknown;
     };
     if (!bingoTierOrder.includes(typed.tier as BingoTier)) {
-      throw new Error("Invalid bingo tiles payload in database");
-    }
-    if (
-      typed.image !== undefined &&
-      typed.image !== null &&
-      typeof typed.image !== "string"
-    ) {
       throw new Error("Invalid bingo tiles payload in database");
     }
     tiles.push({
       id: typed.id,
       label: typed.label,
       tier: typed.tier as BingoTier,
-      ...(typeof typed.image === "string" && typed.image.length > 0
-        ? { image: typed.image }
-        : {}),
     });
   }
   return tiles;
@@ -949,6 +938,37 @@ export const listAllBingoCardsWithOwner = (): BingoCardWithOwner[] => {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }));
+};
+
+export const getBingoCardWithOwnerByOwnerUserId = (
+  ownerUserId: number,
+): BingoCardWithOwner | null => {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `
+        SELECT
+          c.owner_user_id,
+          u.kick_username AS owner_kick_username,
+          c.layout_json,
+          c.created_at,
+          c.updated_at
+        FROM bingo_cards c
+        INNER JOIN users u ON u.id = c.owner_user_id
+        WHERE c.owner_user_id = ?
+      `,
+    )
+    .get(ownerUserId) as BingoCardWithOwnerRow | undefined;
+  if (!row) {
+    return null;
+  }
+  return {
+    ownerUserId: row.owner_user_id,
+    ownerKickUsername: row.owner_kick_username,
+    layout: parseLayout(row.layout_json),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 };
 
 const parseCompletedTileIds = (completedTileIdsJson: string): string[] => {

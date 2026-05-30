@@ -1,22 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BingoCardView } from "@/components/bingo-board";
+import { DeadlineCountdown } from "@/components/deadline-countdown";
 import { BingoEditor } from "@/components/bingo-editor";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
 import { isBingoTilePoolReady } from "@/lib/bingo";
 import {
-  formatBingoSubmissionDeadline,
+  getBingoSubmissionDeadline,
   isBingoSubmissionOpen,
 } from "@/lib/bingo-deadline";
 import { getBingoCardByOwnerUserId, getBingoOptions } from "@/server/db/queries";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "DMM Bingo",
+  description: "Build, edit, and lock in your DMM bingo card before the deadline.",
+};
 
 const PageShell = ({
   title,
+  signedInUsername,
   children,
 }: {
   title: string;
+  signedInUsername?: string;
   children: React.ReactNode;
 }) => (
   <main>
@@ -25,6 +33,14 @@ const PageShell = ({
         <h1>{title}</h1>
       </div>
       <div className="page-header-actions">
+        {signedInUsername ? (
+          <span className="page-header-user">
+            Signed in as <strong>{signedInUsername}</strong>
+          </span>
+        ) : null}
+        <Link className="button secondary" href="/bingo/boards">
+          Browse Boards
+        </Link>
         <Link className="button secondary" href="/">
           Back to Home
         </Link>
@@ -50,8 +66,7 @@ export default async function BingoPage() {
   const options = getBingoOptions();
   if (!options) {
     return (
-      <PageShell title="Bingo">
-        <p>Signed in as {user.kickUsername}.</p>
+      <PageShell title="Bingo" signedInUsername={user.kickUsername}>
         <p className="status">Bingo tiles have not been set yet. Check back soon.</p>
       </PageShell>
     );
@@ -59,8 +74,7 @@ export default async function BingoPage() {
   const readiness = isBingoTilePoolReady(options.tiles);
   if (!readiness.ready) {
     return (
-      <PageShell title="Bingo">
-        <p>Signed in as {user.kickUsername}.</p>
+      <PageShell title="Bingo" signedInUsername={user.kickUsername}>
         <p className="status">{readiness.message}</p>
       </PageShell>
     );
@@ -68,17 +82,20 @@ export default async function BingoPage() {
 
   const card = getBingoCardByOwnerUserId(user.userId);
   const open = isBingoSubmissionOpen();
-  const deadlineLabel = formatBingoSubmissionDeadline();
+  const deadlineIso = getBingoSubmissionDeadline().toISOString();
+  const initialNowMs = Date.now();
 
   if (!open) {
     return (
-      <PageShell title="Bingo — Locked">
-        <p>Signed in as {user.kickUsername}.</p>
+      <PageShell title="Bingo — Locked" signedInUsername={user.kickUsername}>
         <aside className="prize-banner bingo-deadline-banner" role="note">
           <div className="prize-banner-title">Bingo Deadline</div>
-          <p className="prize-banner-text">
-            Bingo cards locked at <strong>{deadlineLabel}</strong>.
-          </p>
+          <DeadlineCountdown
+            deadlineIso={deadlineIso}
+            initialNowMs={initialNowMs}
+            openMessage="Bingo cards lock in:"
+            closedMessage="Bingo cards locked."
+          />
         </aside>
         {card ? (
           <div className="card">
@@ -93,18 +110,22 @@ export default async function BingoPage() {
   }
 
   return (
-    <PageShell title={card ? "Edit Your Bingo Card" : "Build Your Bingo Card"}>
-      <p>Signed in as {user.kickUsername}.</p>
-      <p>
+    <PageShell
+      title={card ? "Edit Your Bingo Card" : "Build Your Bingo Card"}
+      signedInUsername={user.kickUsername}
+    >
+      <p className="bingo-tier-balance-text">
         Build a tier-balanced card: 8 Easy, 7 Medium, 5 Hard, 3 Insane, 1
         Legendary (plus FREE center).
       </p>
       <aside className="prize-banner bingo-deadline-banner" role="note">
         <div className="prize-banner-title">Bingo Deadline</div>
-        <p className="prize-banner-text">
-          Bingo cards lock at <strong>{deadlineLabel}</strong>. You can edit yours
-          until then.
-        </p>
+        <DeadlineCountdown
+          deadlineIso={deadlineIso}
+          initialNowMs={initialNowMs}
+          openMessage="Bingo cards lock in:"
+          closedMessage="Bingo cards locked."
+        />
       </aside>
       <BingoEditor
         tiles={options.tiles}

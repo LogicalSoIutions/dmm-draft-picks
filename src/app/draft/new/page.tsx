@@ -1,10 +1,11 @@
 import Link from "next/link";
 
+import { DeadlineCountdown } from "@/components/deadline-countdown";
 import { DraftEditor } from "@/components/draft-editor";
 import { defaultPickOrder } from "@/data/participants";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
 import {
-  formatNewDraftSubmissionDeadline,
+  getNewDraftSubmissionDeadline,
   isNewDraftSubmissionOpen,
 } from "@/lib/draft-deadline";
 import { getDraftByOwnerUserId } from "@/server/db/queries";
@@ -40,7 +41,8 @@ export default async function NewDraftPage() {
   }
   const existingDraft = getDraftByOwnerUserId(user.userId);
   const newDraftsOpen = isNewDraftSubmissionOpen();
-  const submissionDeadlineLabel = formatNewDraftSubmissionDeadline();
+  const submissionDeadlineIso = getNewDraftSubmissionDeadline().toISOString();
+  const initialNowMs = Date.now();
   if (!existingDraft && !newDraftsOpen) {
     return (
       <main>
@@ -58,9 +60,15 @@ export default async function NewDraftPage() {
           </div>
         </header>
         <p>Signed in as {user.kickUsername}.</p>
-        <p className="status error">
-          New draft submissions closed at {submissionDeadlineLabel}.
-        </p>
+        <aside className="prize-banner draft-deadline-banner" role="note">
+          <div className="prize-banner-title">Draft Pick Deadline</div>
+          <DeadlineCountdown
+            deadlineIso={submissionDeadlineIso}
+            initialNowMs={initialNowMs}
+            openMessage="Draft picks lock in:"
+            closedMessage="Draft picks locked."
+          />
+        </aside>
         <p>
           You can still browse submitted drafts and stats, but new entries are
           no longer accepted.
@@ -90,14 +98,21 @@ export default async function NewDraftPage() {
         We only store your Kick username and auth token data required to keep you
         logged in.
       </p>
+      <aside className="prize-banner draft-deadline-banner" role="note">
+        <div className="prize-banner-title">Draft Pick Deadline</div>
+        <DeadlineCountdown
+          deadlineIso={submissionDeadlineIso}
+          initialNowMs={initialNowMs}
+          openMessage="Draft picks lock in:"
+          closedMessage="Draft picks locked."
+        />
+      </aside>
       {existingDraft ? (
         <p>
           Your account has one draft. Saving here updates that same draft instead
           of creating a new one.
         </p>
-      ) : (
-        <p>New draft submissions close at {submissionDeadlineLabel}.</p>
-      )}
+      ) : null}
       <DraftEditor
         initialOrder={initialOrder}
         initialCaptainAssignments={initialCaptainAssignments}

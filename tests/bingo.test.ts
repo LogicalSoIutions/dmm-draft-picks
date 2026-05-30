@@ -10,7 +10,6 @@ import {
   getRequiredTierForLayoutIndex,
   hasBingo,
   isBingoTilePoolReady,
-  resolveBingoTileImage,
   type BingoTier,
   validateCardLayout,
   validateCompletedTileIds,
@@ -36,8 +35,9 @@ const validatedTiles = (
     insane: 3,
     legendary: 1,
   },
+  options: { allowPartial?: boolean } = {},
 ): BingoTile[] => {
-  const result = validateTileOptions(makeTieredInputs(counts));
+  const result = validateTileOptions(makeTieredInputs(counts), options);
   if (!result.valid) {
     throw new Error(result.message);
   }
@@ -160,23 +160,6 @@ describe("validateTileOptions", () => {
     expect(result.valid).toBe(false);
   });
 
-  it("keeps optional images and drops empty ones", () => {
-    const inputs = makeTieredInputs({
-      easy: 8,
-      medium: 7,
-      hard: 5,
-      insane: 3,
-      legendary: 1,
-    }) as Array<{ label: string; tier: BingoTier; image?: string }>;
-    inputs[0] = { label: "With image", tier: "easy", image: "thing.png" };
-    inputs[1] = { label: "Empty image", tier: "easy", image: "" };
-    const result = validateTileOptions(inputs);
-    expect(result.valid).toBe(true);
-    if (result.valid) {
-      expect(result.tiles[0].image).toBe("thing.png");
-      expect(result.tiles[1].image).toBeUndefined();
-    }
-  });
 });
 
 describe("isBingoTilePoolReady", () => {
@@ -187,7 +170,7 @@ describe("isBingoTilePoolReady", () => {
       hard: 4,
       insane: 3,
       legendary: 1,
-    });
+    }, { allowPartial: true });
     const readiness = isBingoTilePoolReady(partial);
     expect(readiness.ready).toBe(false);
   });
@@ -330,15 +313,3 @@ describe("hasBingo", () => {
   });
 });
 
-describe("resolveBingoTileImage", () => {
-  it("passes through absolute urls and root-relative paths", () => {
-    expect(resolveBingoTileImage("https://example.com/a.png")).toBe(
-      "https://example.com/a.png",
-    );
-    expect(resolveBingoTileImage("/local/a.png")).toBe("/local/a.png");
-  });
-
-  it("serves bare filenames from the images endpoint", () => {
-    expect(resolveBingoTileImage("a b.png")).toBe("/api/images/a%20b.png");
-  });
-});

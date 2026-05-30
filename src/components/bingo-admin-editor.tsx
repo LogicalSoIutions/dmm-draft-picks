@@ -15,9 +15,9 @@ type BingoAdminEditorProps = {
   initialUpdatedAt: string | null;
 };
 
-type TileDraft = { id: string; label: string; image: string };
+type TileDraft = { id: string; label: string };
 type TierDrafts = Record<BingoTier, TileDraft[]>;
-type SavedTile = { id: string; label: string; image: string; tier: BingoTier };
+type SavedTile = { id: string; label: string; tier: BingoTier };
 
 type SaveState =
   | { kind: "idle"; message: string }
@@ -47,13 +47,12 @@ const buildInitialTierDrafts = (initialTiles: BingoTile[]): TierDrafts => {
     byTier[tile.tier].push({
       id: tile.id,
       label: tile.label,
-      image: tile.image ?? "",
     });
   }
   for (const tier of bingoTierOrder) {
     const min = bingoTierPoolBounds[tier].min;
     while (byTier[tier].length < min) {
-      byTier[tier].push({ id: createLocalTileId(), label: "", image: "" });
+      byTier[tier].push({ id: createLocalTileId(), label: "" });
     }
   }
   return byTier;
@@ -65,7 +64,6 @@ const flattenLabeledDrafts = (draftsByTier: TierDrafts): SavedTile[] =>
       .map((draft) => ({
         id: draft.id,
         label: draft.label.trim(),
-        image: draft.image.trim(),
         tier,
       }))
       .filter((draft) => draft.label.length > 0),
@@ -92,7 +90,6 @@ export function BingoAdminEditor({
         initialTiles.map((tile) => ({
           id: tile.id,
           label: tile.label,
-          image: tile.image ?? "",
           tier: tile.tier,
         })),
       ),
@@ -127,7 +124,7 @@ export function BingoAdminEditor({
         ...current,
         [tier]: [
           ...current[tier],
-          { id: createLocalTileId(), label: "", image: "" },
+          { id: createLocalTileId(), label: "" },
         ],
       };
     });
@@ -160,7 +157,6 @@ export function BingoAdminEditor({
         return (
           !previous ||
           previous.label !== tile.label ||
-          previous.image !== tile.image ||
           previous.tier !== tile.tier
         );
       });
@@ -177,7 +173,6 @@ export function BingoAdminEditor({
           id: tile.id,
           label: tile.label,
           tier: tile.tier,
-          image: tile.image.length > 0 ? tile.image : undefined,
         })),
         expectedUpdatedAt: optionsUpdatedAt,
       }),
@@ -208,7 +203,6 @@ export function BingoAdminEditor({
       ? latestTiles.map((tile) => ({
           id: tile.id,
           label: tile.label,
-          image: tile.image ?? "",
           tier: tile.tier,
         }))
       : currentLabeledTiles;
@@ -229,7 +223,7 @@ export function BingoAdminEditor({
         <p>
           Build option pools by tier. Players will still place exactly 24 tiles
           (8 Easy, 7 Medium, 5 Hard, 3 Insane, 1 Legendary) into fixed tier slots.
-          Each option needs a label; image is optional.
+          Each option needs a label.
         </p>
         {bingoTierOrder.map((tier) => {
           const drafts = draftsByTier[tier];
@@ -262,16 +256,6 @@ export function BingoAdminEditor({
                       maxLength={80}
                       onChange={(event) =>
                         updateDraft(tier, index, { label: event.target.value })
-                      }
-                    />
-                    <input
-                      className="bingo-admin-input"
-                      type="text"
-                      value={draft.image}
-                      placeholder="Image filename or URL (optional)"
-                      maxLength={300}
-                      onChange={(event) =>
-                        updateDraft(tier, index, { image: event.target.value })
                       }
                     />
                     <button

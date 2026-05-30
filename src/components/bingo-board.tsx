@@ -25,7 +25,6 @@ import {
   bingoTierRequiredCounts,
   bingoTileCellIndices,
   getRequiredTierForLayoutIndex,
-  resolveBingoTileImage,
   type BingoTier,
   type BingoTile,
 } from "@/lib/bingo";
@@ -452,14 +451,6 @@ function BingoTileCard({ tile, variant = "default" }: BingoTileCardProps) {
     <div
       className={`bingo-tile tier-${tile.tier}${variant === "overlay" ? " bingo-tile-overlay" : ""}`}
     >
-      {tile.image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={resolveBingoTileImage(tile.image)}
-          alt=""
-          className="bingo-tile-image"
-        />
-      ) : null}
       <span className="bingo-tile-label">{tile.label}</span>
     </div>
   );
@@ -495,6 +486,7 @@ function BingoCell({
   layoutIndex,
   requiredTier,
   tile,
+  activeTileTier,
   isAutoFillPulse,
   dragDisabled,
 }: {
@@ -502,6 +494,7 @@ function BingoCell({
   layoutIndex: number;
   requiredTier: BingoTier;
   tile: BingoTile | null;
+  activeTileTier: BingoTier | null;
   isAutoFillPulse: boolean;
   dragDisabled: boolean;
 }) {
@@ -509,10 +502,14 @@ function BingoCell({
     id: `${CELL_DROPPABLE_PREFIX}${layoutIndex}`,
   });
   const empty = tile === null;
+  const invalidDropTarget =
+    isOver && activeTileTier !== null && activeTileTier !== requiredTier;
   return (
     <div
       ref={setNodeRef}
       className={`bingo-cell tier-${requiredTier}${empty ? " is-empty" : ""}${isOver ? " is-over" : ""}${
+        invalidDropTarget ? " is-over-invalid" : ""
+      }${
         isAutoFillPulse ? " is-autofill-pulse" : ""
       }`}
     >
@@ -607,6 +604,7 @@ export function BingoBoard({ tiles, controller }: BingoBoardProps) {
   const activeTile = controller.activeTileId
     ? tileMap.get(controller.activeTileId) ?? null
     : null;
+  const activeTileTier = activeTile?.tier ?? null;
 
   return (
     <DndContext
@@ -638,6 +636,7 @@ export function BingoBoard({ tiles, controller }: BingoBoardProps) {
                 layoutIndex={layoutIndex}
                 requiredTier={requiredTier}
                 tile={tile}
+                activeTileTier={activeTileTier}
                 dragDisabled={controller.isAutoFilling}
                 isAutoFillPulse={controller.autoFillPulseCellIndices.includes(
                   layoutIndex,
