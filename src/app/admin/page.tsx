@@ -7,6 +7,7 @@ import { getAuthenticatedUserFromServer } from "@/lib/auth";
 import {
   findDraftsMatchingPayload,
   getOfficialDraft,
+  listAllDraftsWithOwner,
 } from "@/server/db/queries";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export default async function AdminPage() {
         captainAssignments: official.captainAssignments,
       })
     : [];
+  const allDrafts = listAllDraftsWithOwner();
 
   return (
     <main>
@@ -74,6 +76,10 @@ export default async function AdminPage() {
           updatedAt: match.updatedAt,
         }))}
         hasOfficialDraft={Boolean(official)}
+        allDrafts={allDrafts.map((d) => ({
+          picksOrder: d.picksOrder,
+          captainAssignments: d.captainAssignments,
+        }))}
       />
     </main>
   );

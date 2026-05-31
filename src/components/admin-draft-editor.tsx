@@ -7,13 +7,18 @@ import {
   SnakeDraftBoard,
   useSnakeDraftBoard,
 } from "@/components/snake-draft-board";
-import type { CaptainAssignments } from "@/data/participants";
+import { captains, type CaptainAssignments } from "@/data/participants";
+import { buildSlotAssignments, slotToCaptainIndex } from "@/lib/snake-draft";
 
 type AdminDraftEditorProps = {
   initialOrder: string[];
   initialCaptainAssignments: CaptainAssignments;
   initialMatches: OfficialMatch[];
   hasOfficialDraft: boolean;
+  allDrafts: {
+    picksOrder: string[];
+    captainAssignments: CaptainAssignments;
+  }[];
 };
 
 type OfficialMatch = {
@@ -40,6 +45,7 @@ export function AdminDraftEditor({
   initialCaptainAssignments,
   initialMatches,
   hasOfficialDraft,
+  allDrafts,
 }: AdminDraftEditorProps) {
   const board = useSnakeDraftBoard(initialOrder, initialCaptainAssignments);
   const [saveState, setSaveState] = useState<SaveState>({
@@ -48,6 +54,73 @@ export function AdminDraftEditor({
   });
   const [matches, setMatches] = useState<OfficialMatch[]>(initialMatches);
   const [hasSaved, setHasSaved] = useState<boolean>(hasOfficialDraft);
+
+  const userDraftSlotAssignmentsList = useMemo(() => {
+    return allDrafts.map((d) => buildSlotAssignments(d.picksOrder, d.captainAssignments));
+  }, [allDrafts]);
+
+  const slotCounters = useMemo(() => {
+    const currentAssignments = board.boardProps.slotAssignments;
+    const exactCounters = new Array<number | null>(board.slotCount).fill(null);
+    const teamCounters = new Array<number | null>(board.slotCount).fill(null);
+    for (let i = 0; i < board.slotCount; i++) {
+      if (currentAssignments[i] === null) {
+        exactCounters[i] = null;
+        teamCounters[i] = null;
+        continue;
+      }
+
+      const slotsToMatch: { index: number; pickId: string; captainId: string }[] = [];
+      for (let j = 0; j <= i; j++) {
+        const pId = currentAssignments[j];
+        if (pId !== null) {
+          const captainIndex = slotToCaptainIndex(j + 1);
+          const captainId = captains[captainIndex].id;
+          slotsToMatch.push({ index: j, pickId: pId, captainId });
+        }
+      }
+
+      if (slotsToMatch.length === 0) {
+        exactCounters[i] = 0;
+        teamCounters[i] = 0;
+        continue;
+      }
+
+      let exactMatchCount = 0;
+      let teamMatchCount = 0;
+      for (let dIndex = 0; dIndex < allDrafts.length; dIndex++) {
+        const draft = allDrafts[dIndex];
+        const userSlots = userDraftSlotAssignmentsList[dIndex];
+
+        let exactMatchesAll = true;
+        for (const { index, pickId } of slotsToMatch) {
+          if (userSlots[index] !== pickId) {
+            exactMatchesAll = false;
+            break;
+          }
+        }
+        if (exactMatchesAll) {
+          exactMatchCount++;
+        }
+
+        let teamMatchesAll = true;
+        for (const { pickId, captainId } of slotsToMatch) {
+          if (draft.captainAssignments[pickId] !== captainId) {
+            teamMatchesAll = false;
+            break;
+          }
+        }
+        if (teamMatchesAll) {
+          teamMatchCount++;
+        }
+      }
+      exactCounters[i] = exactMatchCount;
+      teamCounters[i] = teamMatchCount;
+    }
+    return { exactCounters, teamCounters };
+  }, [board.boardProps.slotAssignments, board.slotCount, userDraftSlotAssignmentsList, allDrafts]);
+
+  const { exactCounters, teamCounters } = slotCounters;
 
   const saveOfficialDraft = async () => {
     if (!board.apiPayload) {
@@ -99,7 +172,11 @@ export function AdminDraftEditor({
 
   return (
     <div className="grid" style={{ gap: 16 }}>
-      <SnakeDraftBoard {...board.boardProps} />
+      <SnakeDraftBoard
+        {...board.boardProps}
+        slotCounters={exactCounters}
+        slotTeamCounters={teamCounters}
+      />
       <div className="row">
         <button
           className="button"

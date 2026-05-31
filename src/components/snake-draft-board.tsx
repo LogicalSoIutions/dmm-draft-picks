@@ -54,6 +54,8 @@ export type SnakeDraftBoardProps = {
   onDragStart: (event: DragStartEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;
   onDragCancel: () => void;
+  slotCounters?: (number | null)[];
+  slotTeamCounters?: (number | null)[];
 };
 
 export type SnakeDraftBoardController = {
@@ -215,7 +217,17 @@ function DraggablePick({ pickId }: { pickId: string }) {
   );
 }
 
-function SnakeSlot({ slotNumber, pickId }: { slotNumber: number; pickId: string | null }) {
+function SnakeSlot({
+  slotNumber,
+  pickId,
+  counter,
+  teamCounter,
+}: {
+  slotNumber: number;
+  pickId: string | null;
+  counter?: number | null;
+  teamCounter?: number | null;
+}) {
   const { setNodeRef, isOver } = useDroppable({
     id: `${SLOT_DROPPABLE_PREFIX}${slotNumber}`,
   });
@@ -228,7 +240,25 @@ function SnakeSlot({ slotNumber, pickId }: { slotNumber: number; pickId: string 
       {empty ? (
         <span className="snake-slot-number">{slotNumber}</span>
       ) : (
-        <DraggablePick pickId={pickId} />
+        <>
+          <DraggablePick pickId={pickId} />
+          {teamCounter !== undefined && teamCounter !== null && (
+            <span
+              className="snake-slot-counter-team"
+              title={`${teamCounter} guessers assigned all these picks to the same captains (ignoring draft order)`}
+            >
+              {teamCounter}
+            </span>
+          )}
+          {counter !== undefined && counter !== null && (
+            <span
+              className="snake-slot-counter"
+              title={`${counter} guessers got all picks correct in exact order up to this slot`}
+            >
+              {counter}
+            </span>
+          )}
+        </>
       )}
     </div>
   );
@@ -238,10 +268,14 @@ function CaptainColumn({
   captain,
   slotNumbers,
   slotAssignments,
+  slotCounters,
+  slotTeamCounters,
 }: {
   captain: Participant;
   slotNumbers: number[];
   slotAssignments: (string | null)[];
+  slotCounters?: (number | null)[];
+  slotTeamCounters?: (number | null)[];
 }) {
   const headerStyle: CSSProperties | undefined = captain.color
     ? ({ "--captain-color": captain.color } as CSSProperties)
@@ -264,6 +298,8 @@ function CaptainColumn({
             key={slotNumber}
             slotNumber={slotNumber}
             pickId={slotAssignments[slotNumber - 1]}
+            counter={slotCounters ? slotCounters[slotNumber - 1] : undefined}
+            teamCounter={slotTeamCounters ? slotTeamCounters[slotNumber - 1] : undefined}
           />
         ))}
       </div>
@@ -300,6 +336,8 @@ export function SnakeDraftBoard({
   onDragStart,
   onDragEnd,
   onDragCancel,
+  slotCounters,
+  slotTeamCounters,
 }: SnakeDraftBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -327,6 +365,8 @@ export function SnakeDraftBoard({
                 captain={captain}
                 slotNumbers={snakeSlotsByCaptain[captainIndex]}
                 slotAssignments={slotAssignments}
+                slotCounters={slotCounters}
+                slotTeamCounters={slotTeamCounters}
               />
             ))}
           </div>

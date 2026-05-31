@@ -380,6 +380,38 @@ p {
     3px 3px 0 rgba(0, 0, 0, 0.55);
 }
 
+.snake-slot-counter {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(10, 9, 7, 0.9);
+  border: 1px solid var(--osrs-border);
+  color: var(--osrs-gold-bright);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--osrs-font);
+  padding: 2px 6px;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: var(--osrs-shadow-1);
+}
+
+.snake-slot-counter-team {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(10, 9, 7, 0.9);
+  border: 1px solid var(--osrs-border);
+  color: var(--osrs-green);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--osrs-font);
+  padding: 2px 6px;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: var(--osrs-shadow-1);
+}
+
 .pool {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
