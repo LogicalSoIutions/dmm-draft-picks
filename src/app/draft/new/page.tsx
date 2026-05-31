@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DeadlineCountdown } from "@/components/deadline-countdown";
 import { DraftEditor } from "@/components/draft-editor";
+import { DraftViewer } from "@/components/draft-viewer";
 import { defaultPickOrder } from "@/data/participants";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
 import {
@@ -43,12 +44,12 @@ export default async function NewDraftPage() {
   const newDraftsOpen = isNewDraftSubmissionOpen();
   const submissionDeadlineIso = getNewDraftSubmissionDeadline().toISOString();
   const initialNowMs = Date.now();
-  if (!existingDraft && !newDraftsOpen) {
+  if (!newDraftsOpen) {
     return (
       <main>
         <header className="page-header">
           <div className="page-header-title">
-            <h1>Submissions Closed</h1>
+            <h1>Draft Locked</h1>
           </div>
           <div className="page-header-actions">
             <Link className="button secondary" href="/stats">
@@ -69,10 +70,19 @@ export default async function NewDraftPage() {
             closedMessage="Draft picks locked."
           />
         </aside>
-        <p>
-          You can still browse submitted drafts and stats, but new entries are
-          no longer accepted.
-        </p>
+        {existingDraft ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <p>The deadline has passed. Your submitted draft is locked and can no longer be edited.</p>
+            <DraftViewer
+              order={existingDraft.picksOrder}
+              captainAssignments={existingDraft.captainAssignments}
+            />
+          </div>
+        ) : (
+          <p>
+            You did not save a draft before the deadline.
+          </p>
+        )}
       </main>
     );
   }

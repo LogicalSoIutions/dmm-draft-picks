@@ -462,11 +462,9 @@ function BingoTileCard({ tile, variant = "default" }: BingoTileCardProps) {
 function DraggableTile({
   tile,
   disabled,
-  isPlaced,
 }: {
   tile: BingoTile;
   disabled?: boolean;
-  isPlaced?: boolean;
 }) {
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: tile.id,
@@ -475,13 +473,13 @@ function DraggableTile({
   return (
     <div
       ref={setNodeRef}
-      className={`bingo-tile-draggable${isPlaced ? " is-placed" : ""}`}
+      className="bingo-tile-draggable"
       style={{ opacity: isDragging ? 0 : 1 }}
       aria-label={`Drag ${tile.label}`}
       {...attributes}
       {...listeners}
     >
-      <BingoTileCard tile={tile} variant={isPlaced ? "placed" : "default"} />
+      <BingoTileCard tile={tile} />
     </div>
   );
 }
@@ -570,12 +568,23 @@ function SidePool({
         ) : (
           tiles.map((tile) => {
             const isPlaced = placedTileIds.has(tile.id);
+            if (isPlaced) {
+              return (
+                <div
+                  key={tile.id}
+                  className="bingo-tile-draggable"
+                  style={{ cursor: "not-allowed", touchAction: "auto" }}
+                  aria-hidden="true"
+                >
+                  <BingoTileCard tile={tile} variant="placed" />
+                </div>
+              );
+            }
             return (
               <DraggableTile
                 key={tile.id}
                 tile={tile}
-                disabled={dragDisabled || isPlaced}
-                isPlaced={isPlaced}
+                disabled={dragDisabled}
               />
             );
           })

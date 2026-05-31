@@ -51,6 +51,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <Link className="button secondary" href="/stats">
             View Stats
           </Link>
+          {/* TODO: Enable once we have a draft */}
+          {/* <Link className="button secondary" href="/bingo">
+            Bingo
+          </Link> */}
           {user ? (
             <>
               <span className="page-header-user">

@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { DraftEditor } from "@/components/draft-editor";
+import { DraftViewer } from "@/components/draft-viewer";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
 import { authorizeDraftAccess } from "@/lib/draft";
+import { isNewDraftSubmissionOpen } from "@/lib/draft-deadline";
 import { getDraftByPublicId } from "@/server/db/queries";
 
 type EditDraftPageProps = {
@@ -61,6 +63,31 @@ export default async function EditDraftPage({ params }: EditDraftPageProps) {
           </div>
         </header>
         <p>Invalid draft URL or you do not have access to this draft.</p>
+      </main>
+    );
+  }
+  if (!isNewDraftSubmissionOpen()) {
+    return (
+      <main>
+        <header className="page-header">
+          <div className="page-header-title">
+            <h1>Draft Locked</h1>
+          </div>
+          <div className="page-header-actions">
+            <Link className="button secondary" href="/stats">
+              View Stats
+            </Link>
+            <Link className="button" href="/">
+              Back to Home
+            </Link>
+          </div>
+        </header>
+        <p>Signed in as {user.kickUsername}.</p>
+        <p>The deadline has passed. This draft is locked and can no longer be edited.</p>
+        <DraftViewer
+          order={draft.picksOrder}
+          captainAssignments={draft.captainAssignments}
+        />
       </main>
     );
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthenticatedUserFromRequest } from "@/lib/auth";
+import { isNewDraftSubmissionOpen } from "@/lib/draft-deadline";
 import {
   authorizeDraftAccess,
   validateCaptainAssignments,
@@ -77,6 +78,12 @@ export async function PATCH(
   const auth = await getDraftForRequest(request, publicId);
   if (!auth.ok) {
     return auth.response;
+  }
+  if (!isNewDraftSubmissionOpen()) {
+    return NextResponse.json(
+      { error: "Draft submissions are closed." },
+      { status: 403 },
+    );
   }
   let order: unknown;
   let captainAssignments: unknown;

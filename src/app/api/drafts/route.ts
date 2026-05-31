@@ -53,13 +53,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const picksOrder = validation.order;
   const normalizedAssignments = assignmentValidation.assignments;
-  const existingDraft = getDraftByOwnerUserId(user.userId);
-  if (!existingDraft && !isNewDraftSubmissionOpen()) {
+  if (!isNewDraftSubmissionOpen()) {
     return NextResponse.json(
-      { error: "New draft submissions are closed." },
+      { error: "Draft submissions are closed." },
       { status: 403 },
     );
   }
+  const existingDraft = getDraftByOwnerUserId(user.userId);
   const ids = createDraftIds();
   if (existingDraft) {
     const updatedDraft = updateDraftOrder({
