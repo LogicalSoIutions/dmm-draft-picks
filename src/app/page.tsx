@@ -1,11 +1,7 @@
 import Link from "next/link";
 
-import { DeadlineCountdown } from "@/components/deadline-countdown";
 import { DraftCarousel } from "@/components/draft-carousel";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
-import {
-  getNewDraftSubmissionDeadline,
-} from "@/lib/draft-deadline";
 import { listAllDraftsWithOwner } from "@/server/db/queries";
 
 type HomePageProps = {
@@ -20,28 +16,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     : authErrorValue;
   const user = await getAuthenticatedUserFromServer();
   const drafts = listAllDraftsWithOwner();
-  const submissionDeadlineIso = getNewDraftSubmissionDeadline().toISOString();
-  const initialNowMs = Date.now();
-
   return (
     <main>
       <aside className="prize-banner" role="note">
-        <div className="prize-banner-title">Prize Pool</div>
-        <p className="prize-banner-text">
-          Whoever guesses the draft right gets{" "}
-          <strong>500M OSRS GP from Odablock</strong>. If more than 3 people
-          win, the first two people to enter the winning draft will face off in
-          a <strong>Split or Steal</strong>.
+        <p className="prize-banner-text" style={{ fontSize: "16px", margin: 0 }}>
+          <strong>DRAFT IS OVER - THERE WAS NOBODY EVEN CLOSE. ALL DRAFTS LOST ROUND 7.</strong>
         </p>
-        <div className="prize-banner-title deadline-title-inline">
-          Draft Pick Deadline
-        </div>
-        <DeadlineCountdown
-          deadlineIso={submissionDeadlineIso}
-          initialNowMs={initialNowMs}
-          openMessage="Draft picks lock in:"
-          closedMessage="Draft picks locked."
-        />
       </aside>
       <header className="page-header">
         <div className="page-header-title">

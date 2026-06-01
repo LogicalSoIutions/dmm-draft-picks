@@ -31,11 +31,15 @@ export default async function PublicDraftPage({ params }: PublicDraftPageProps) 
     );
   }
 
+  const displayTitle = draft.ownerKickUsername.toLowerCase() === "zappermickie"
+    ? "ZapperMickie's Draft (Just kidding, everybody lost on Pick 7)"
+    : `${draft.ownerKickUsername}'s Draft`;
+
   return (
     <main>
       <header className="page-header">
         <div className="page-header-title">
-          <h1>{draft.ownerKickUsername}&apos;s Draft</h1>
+          <h1>{displayTitle}</h1>
         </div>
         <div className="page-header-actions">
           <Link className="button" href="/">
