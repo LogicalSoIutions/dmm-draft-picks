@@ -51,11 +51,13 @@ export type SnakeDraftBoardProps = {
   activePickId: string | null;
   filledCount: number;
   slotCount: number;
-  onDragStart: (event: DragStartEvent) => void;
-  onDragEnd: (event: DragEndEvent) => void;
-  onDragCancel: () => void;
+  onDragStart?: (event: DragStartEvent) => void;
+  onDragEnd?: (event: DragEndEvent) => void;
+  onDragCancel?: () => void;
   slotCounters?: (number | null)[];
   slotTeamCounters?: (number | null)[];
+  readOnly?: boolean;
+  onCounterClick?: (slotNumber: number, type: "exact" | "team") => void;
 };
 
 export type SnakeDraftBoardController = {
@@ -199,18 +201,19 @@ function PickCard({ pickId, variant = "default" }: PickCardProps) {
   );
 }
 
-function DraggablePick({ pickId }: { pickId: string }) {
+function DraggablePick({ pickId, readOnly }: { pickId: string; readOnly?: boolean }) {
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: pickId,
+    disabled: readOnly,
   });
   return (
     <div
-      ref={setNodeRef}
-      className="pick-card-draggable"
+      ref={readOnly ? undefined : setNodeRef}
+      className={readOnly ? "pick-card-readonly" : "pick-card-draggable"}
       style={{ opacity: isDragging ? 0 : 1 }}
-      aria-label={`Drag ${pickMap.get(pickId)?.label ?? pickId}`}
-      {...attributes}
-      {...listeners}
+      aria-label={readOnly ? undefined : `Drag ${pickMap.get(pickId)?.label ?? pickId}`}
+      {...(readOnly ? {} : attributes)}
+      {...(readOnly ? {} : listeners)}
     >
       <PickCard pickId={pickId} />
     </div>
@@ -222,38 +225,86 @@ function SnakeSlot({
   pickId,
   counter,
   teamCounter,
+  readOnly,
+  onCounterClick,
 }: {
   slotNumber: number;
   pickId: string | null;
   counter?: number | null;
   teamCounter?: number | null;
+  readOnly?: boolean;
+  onCounterClick?: (slotNumber: number, type: "exact" | "team") => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `${SLOT_DROPPABLE_PREFIX}${slotNumber}`,
+    disabled: readOnly,
   });
   const empty = pickId === null;
+
+  const handleTeamClick = (e: React.MouseEvent) => {
+    if (onCounterClick) {
+      e.stopPropagation();
+      e.preventDefault();
+      onCounterClick(slotNumber, "team");
+    }
+  };
+
+  const handleExactClick = (e: React.MouseEvent) => {
+    if (onCounterClick) {
+      e.stopPropagation();
+      e.preventDefault();
+      onCounterClick(slotNumber, "exact");
+    }
+  };
+
+  const handleTeamKeyDown = (e: React.KeyboardEvent) => {
+    if (onCounterClick && (e.key === "Enter" || e.key === " ")) {
+      e.stopPropagation();
+      e.preventDefault();
+      onCounterClick(slotNumber, "team");
+    }
+  };
+
+  const handleExactKeyDown = (e: React.KeyboardEvent) => {
+    if (onCounterClick && (e.key === "Enter" || e.key === " ")) {
+      e.stopPropagation();
+      e.preventDefault();
+      onCounterClick(slotNumber, "exact");
+    }
+  };
+
+  const clickable = Boolean(onCounterClick);
+
   return (
     <div
-      ref={setNodeRef}
-      className={`snake-slot${empty ? " is-empty" : ""}${isOver ? " is-over" : ""}`}
+      ref={readOnly ? undefined : setNodeRef}
+      className={`snake-slot${empty ? " is-empty" : ""}${!readOnly && isOver ? " is-over" : ""}`}
     >
       {empty ? (
         <span className="snake-slot-number">{slotNumber}</span>
       ) : (
         <>
-          <DraggablePick pickId={pickId} />
+          <DraggablePick pickId={pickId} readOnly={readOnly} />
           {teamCounter !== undefined && teamCounter !== null && (
             <span
-              className="snake-slot-counter-team"
-              title={`${teamCounter} guessers assigned all these picks to the same captains (ignoring draft order)`}
+              className={`snake-slot-counter-team${clickable ? " is-clickable" : ""}`}
+              title={clickable ? undefined : `${teamCounter} guessers assigned all these picks to the same captains (ignoring draft order)`}
+              onClick={clickable ? handleTeamClick : undefined}
+              onKeyDown={clickable ? handleTeamKeyDown : undefined}
+              role={clickable ? "button" : undefined}
+              tabIndex={clickable ? 0 : undefined}
             >
               {teamCounter}
             </span>
           )}
           {counter !== undefined && counter !== null && (
             <span
-              className="snake-slot-counter"
-              title={`${counter} guessers got all picks correct in exact order up to this slot`}
+              className={`snake-slot-counter${clickable ? " is-clickable" : ""}`}
+              title={clickable ? undefined : `${counter} guessers got all picks correct in exact order up to this slot`}
+              onClick={clickable ? handleExactClick : undefined}
+              onKeyDown={clickable ? handleExactKeyDown : undefined}
+              role={clickable ? "button" : undefined}
+              tabIndex={clickable ? 0 : undefined}
             >
               {counter}
             </span>
@@ -270,12 +321,16 @@ function CaptainColumn({
   slotAssignments,
   slotCounters,
   slotTeamCounters,
+  readOnly,
+  onCounterClick,
 }: {
   captain: Participant;
   slotNumbers: number[];
   slotAssignments: (string | null)[];
   slotCounters?: (number | null)[];
   slotTeamCounters?: (number | null)[];
+  readOnly?: boolean;
+  onCounterClick?: (slotNumber: number, type: "exact" | "team") => void;
 }) {
   const headerStyle: CSSProperties | undefined = captain.color
     ? ({ "--captain-color": captain.color } as CSSProperties)
@@ -300,6 +355,8 @@ function CaptainColumn({
             pickId={slotAssignments[slotNumber - 1]}
             counter={slotCounters ? slotCounters[slotNumber - 1] : undefined}
             teamCounter={slotTeamCounters ? slotTeamCounters[slotNumber - 1] : undefined}
+            readOnly={readOnly}
+            onCounterClick={onCounterClick}
           />
         ))}
       </div>
@@ -338,24 +395,22 @@ export function SnakeDraftBoard({
   onDragCancel,
   slotCounters,
   slotTeamCounters,
+  readOnly = false,
+  onCounterClick,
 }: SnakeDraftBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragCancel={onDragCancel}
-    >
+
+  const boardContent = (
+    <>
       <div className="card">
         <h2>Captain Table</h2>
         <p>
-          Drag picks from the pool below into the numbered snake-draft slots. Pick #1 goes to the
-          first captain, then snakes back across each row. {filledCount} / {slotCount} slots filled.
+          {readOnly
+            ? "Snake-draft order: pick #1 goes to the first captain, then the order reverses across each row."
+            : `Drag picks from the pool below into the numbered snake-draft slots. Pick #1 goes to the first captain, then snakes back across each row. ${filledCount} / ${slotCount} slots filled.`}
         </p>
         <div className="captain-table-scroll">
           <div className="captain-table">
@@ -367,20 +422,40 @@ export function SnakeDraftBoard({
                 slotAssignments={slotAssignments}
                 slotCounters={slotCounters}
                 slotTeamCounters={slotTeamCounters}
+                readOnly={readOnly}
+                onCounterClick={onCounterClick}
               />
             ))}
           </div>
         </div>
       </div>
-      <div className="card">
-        <h2>Unassigned Picks</h2>
-        <p>
-          {visiblePool.length === 0
-            ? "Every pick is placed. Drag any pick here to free up a slot."
-            : `${visiblePool.length} pick${visiblePool.length === 1 ? "" : "s"} left to place.`}
-        </p>
-        <Pool pickIds={visiblePool} />
-      </div>
+      {!readOnly && (
+        <div className="card">
+          <h2>Unassigned Picks</h2>
+          <p>
+            {visiblePool.length === 0
+              ? "Every pick is placed. Drag any pick here to free up a slot."
+              : `${visiblePool.length} pick${visiblePool.length === 1 ? "" : "s"} left to place.`}
+          </p>
+          <Pool pickIds={visiblePool} />
+        </div>
+      )}
+    </>
+  );
+
+  if (readOnly) {
+    return boardContent;
+  }
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragCancel={onDragCancel}
+    >
+      {boardContent}
       <DragOverlay dropAnimation={null}>
         {activePickId ? <PickCard pickId={activePickId} variant="overlay" /> : null}
       </DragOverlay>

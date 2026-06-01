@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { DraftCarousel } from "@/components/draft-carousel";
+import { OfficialDraftView } from "@/components/official-draft-view";
 import { getAuthenticatedUserFromServer } from "@/lib/auth";
-import { listAllDraftsWithOwner } from "@/server/db/queries";
+import { getOfficialDraft, listAllDraftsWithOwner } from "@/server/db/queries";
 
 type HomePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -16,6 +16,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     : authErrorValue;
   const user = await getAuthenticatedUserFromServer();
   const drafts = listAllDraftsWithOwner();
+  const official = getOfficialDraft();
   return (
     <main>
       <aside className="prize-banner" role="note">
@@ -62,15 +63,22 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {authError ? (
         <p className="status error">Authentication error: {authError}</p>
       ) : null}
-      <DraftCarousel
-        drafts={drafts.map((draft) => ({
-          publicId: draft.publicId,
-          ownerKickUsername: draft.ownerKickUsername,
-          picksOrder: draft.picksOrder,
-          captainAssignments: draft.captainAssignments,
-          updatedAt: draft.updatedAt,
-        }))}
-      />
+      {official ? (
+        <OfficialDraftView
+          officialOrder={official.picksOrder}
+          officialCaptainAssignments={official.captainAssignments}
+          allDrafts={drafts.map((draft) => ({
+            picksOrder: draft.picksOrder,
+            captainAssignments: draft.captainAssignments,
+            ownerKickUsername: draft.ownerKickUsername,
+            publicId: draft.publicId,
+          }))}
+        />
+      ) : (
+        <div className="card">
+          <p>No official draft results set yet.</p>
+        </div>
+      )}
     </main>
   );
 }
